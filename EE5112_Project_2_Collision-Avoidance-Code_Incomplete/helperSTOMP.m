@@ -50,50 +50,21 @@ while abs(Qtheta - QthetaOld) > convergenceThreshold
     QthetaOld = Qtheta;
     % use tic and toc for printing out the running time
     tic
-    %% Step 1: Sample noisy trajectories (only inner knots)
-    % Generate nPaths sample trajectories by adding Gaussian noise to current theta
-    % Noise covariance: Rinv (normalized inverse of smoothness matrix R)
-    [theta_samples, em] = stompSamples(nPaths, Rinv, theta);
-    
-    %% Step 2: Calculate local trajectory cost for each sampled trajectory
-    % Evaluate cost at each time-step for all sample paths
-    % Stheta(k, t) = cost of kth sample at time-step t
+    %% TODO: Complete the following code. The needed functions are already given or partially given in the folder.
+    %% TODO: Sample noisy trajectories
+
+    %% TODO: Calculate Local trajectory cost for each sampled trajectory
+    % variable declaration (holder for the cost):
     Stheta = zeros(nPaths, nDiscretize);
-    for k = 1:nPaths
-        [S_k, ~] = stompTrajCost(robot_struct, theta_samples{k}, R, voxel_world);
-        Stheta(k, :) = S_k;
-    end
+
     
-    %% Step 3: Update trajectory probability using softmin (per time-step)
-    % Convert costs to probabilities: lower cost → higher probability
-    % Computed independently for each time-step t
-    trajProb = zeros(nPaths, nDiscretize);
-    for t = 1:nDiscretize
-        c = Stheta(:, t);
-        c = c - min(c);              % shift to avoid numerical overflow
-        s = std(c) + eps;            % temperature parameter (adaptive scaling)
-        w = exp(-c / s);             % softmin weighting
-        trajProb(:, t) = w / (sum(w) + eps);  % normalize to sum to 1
-    end
+    %% TODO: Given the local traj cost, update local trajectory probability
+
     
-    %% Step 4: Compute gradient estimate (delta theta)
-    % Use probability-weighted noise samples with unbiased baseline
-    % dtheta represents the improvement direction
-    dtheta = stompDTheta(trajProb, em);
-    
-    %% Step 5: Smooth and update trajectory (only inner knots)
-    % Apply smoothing matrix M and step size eta for stable convergence
-    eta = 0.3;  % learning rate (step size)
-    dtheta_smoothed = zeros(size(theta));
-    dtheta_smoothed(:, 2:nDiscretize-1) = eta * ( dtheta(:, 2:nDiscretize-1) * M );
-    theta(:, 2:nDiscretize-1) = theta(:, 2:nDiscretize-1) + dtheta_smoothed(:, 2:nDiscretize-1);
-    
-    %% Step 6: Evaluate the updated trajectory cost
-    [~, Qtheta] = stompTrajCost(robot_struct, theta, R, voxel_world);
+    %% TODO: Compute delta theta (aka gradient estimator, the improvement of the delta)
 
 
-
-
+    %% TODO: Compute the cost of the new trajectory
  
     toc
 
@@ -146,7 +117,7 @@ isTrajectoryInCollision = any(inCollision)
 
 
 %% Record the whole training/learning process in video file
-enableVideoTraining = 1;
+enableVideoTraining = 0;
 
 
 
@@ -181,7 +152,7 @@ close(v);
 
 
 %% Record planned trajectory to video files
-enableVideo = 1;
+enableVideo = 0;
 if enableVideo == 1
     v = VideoWriter('KinvaGen3_wEEConY3.avi');
     v.FrameRate =2;

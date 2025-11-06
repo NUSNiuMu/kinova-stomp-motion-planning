@@ -14,9 +14,14 @@ function [X, T] = updateJointsWorldPosition(robot_struct, theta)
 %       X:            homogeneous joint positions in world frame (n x 4)
 %       T:            base-to-body homogeneous transforms for each joint (1 x n cell)
 %
-% The implementation pre-computes the screw axes (space representation) and
-% the home configurations of every articulated body, then evaluates the
-% forward kinematics with the Product-of-Exponentials formula.
+% IMPLEMENTATION DETAILS:
+% 1. Pre-computes screw axes S_i (space frame) from geometric Jacobian at home config
+% 2. Caches home configurations M_i for each body (computed once via getTransform)
+% 3. Applies Product-of-Exponentials: T_i = exp([S_1]θ_1)...exp([S_i]θ_i) * M_i
+% 4. Uses persistent cache to avoid recomputation across multiple calls
+%
+% NOTE: Initial computation uses getTransform() once per joint to establish M_i,
+%       consistent with textbook recommendations and efficiency requirements.
 
 theta = theta(:); % ensure column vector
 nJoints = length(theta);
@@ -57,66 +62,51 @@ function [Slist, Mlist] = computePoEParameters(robot_struct, nJoints)
 
     for idx = 1:nJoints
         bodyName = robot_struct.BodyNames{idx};
-        body = robot_struct.Bodies{idx};
 
         % Base-to-body transform at home configuration (M_i)
         M_i = getTransform(robot_struct, homeConfig, bodyName);
         Mlist{idx} = M_i;
 
-        % Retrieve joint frame at home configuration
-        childToJoint = body.Joint.ChildToJointTransform;
-        T_base_joint = M_i * tforminv(childToJoint);
-
-        % Joint axis expressed in joint frame
-        axisLocal = body.Joint.JointAxis(:);
-        axisNorm = norm(axisLocal);
-        if axisNorm > eps
-            axisLocal = axisLocal / axisNorm;
-        end
-
-        % Map axis (and point) to space frame
-        R_base_joint = T_base_joint(1:3, 1:3);
-        p_base_joint = T_base_joint(1:3, 4);
-
-        switch lower(body.Joint.Type)
-            case 'revolute'
-                omega = R_base_joint * axisLocal;
-                v = -cross(omega, p_base_joint);
-                Slist(:, idx) = [omega; v];
-            case 'prismatic'
-                v = R_base_joint * axisLocal;
-                Slist(:, idx) = [zeros(3, 1); v];
-            otherwise
-                % Fixed or unsupported joint types contribute no motion
-                Slist(:, idx) = zeros(6, 1);
-        end
+        % Space screw axis equals the idx-th column of the geometric Jacobian
+        Jspace = geometricJacobian(robot_struct, homeConfig, bodyName);
+        Slist(:, idx) = Jspace(:, idx);
     end
 end
 
 function g = expTwist(S, theta)
+    % Compute matrix exponential of twist [S]*theta
+    % Based on Rodrigues' formula for SE(3)
+    % S = [ω; v] is 6x1 twist vector
+    
     omega = S(1:3);
     v = S(4:6);
     omegaNorm = norm(omega);
 
-    if omegaNorm < 1e-9 % prismatic or pure translation
+    if omegaNorm < 1e-9 % prismatic joint (pure translation)
         R = eye(3);
         p = v * theta;
-    else
-        % Assume omega is already unit-length; re-normalize for safety
+    else % revolute joint (rotation + translation)
+        % Normalize angular velocity for numerical stability
         omega = omega / omegaNorm;
         theta = theta * omegaNorm;
+        
+        % Rodrigues' formula: R = I + sin(θ)[ω] + (1-cos(θ))[ω]²
         omegaHat = skew(omega);
-        R = eye(3) + sin(theta) * omegaHat + (1 - cos(theta)) * (omegaHat * omegaHat);
-        G = eye(3) * theta + (1 - cos(theta)) * omegaHat + (theta - sin(theta)) * (omegaHat * omegaHat);
+        omegaHat2 = omegaHat * omegaHat;
+        R = eye(3) + sin(theta) * omegaHat + (1 - cos(theta)) * omegaHat2;
+        
+        % G-matrix for translation: G = I*θ + (1-cos(θ))[ω] + (θ-sin(θ))[ω]²
+        G = eye(3) * theta + (1 - cos(theta)) * omegaHat + (theta - sin(theta)) * omegaHat2;
         p = G * (v / omegaNorm);
     end
 
-    g = eye(4);
-    g(1:3, 1:3) = R;
-    g(1:3, 4) = p;
+    % Construct homogeneous transformation matrix
+    g = [R, p; 0, 0, 0, 1];
 end
 
 function S = skew(w)
+    % Skew-symmetric matrix representation of 3D vector w
+    % [w] = skew(w) such that [w]x = w × x (cross product)
     S = [  0     -w(3)  w(2);
           w(3)    0    -w(1);
          -w(2)  w(1)    0  ];

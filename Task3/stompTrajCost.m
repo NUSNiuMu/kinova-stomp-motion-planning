@@ -73,10 +73,6 @@ function tf = hasFieldOrProp(obj, name)
 end
 
 function val = getFieldOrProp(obj, name)
-    if isstruct(obj)
-        val = obj.(name);
-    else
-        % 对象（如 rigidBodyTree）；若无该属性，上层先 hasFieldOrProp 判断
-        val = obj.(name);
-    end
+    % 统一访问方式：无论struct还是object都使用点运算符
+    val = obj.(name);
 end

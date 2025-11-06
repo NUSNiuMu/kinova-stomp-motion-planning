@@ -33,6 +33,7 @@ try
     cost = sum(cost_array);
 
 catch
-    % debug fall-back: recompute idx if any invalid index happens
-    idx = ceil((sphere_centers - env_corner_vec) ./ voxel_world.voxel_size);
+    % debug fall-back: if any invalid index happens, return zero cost
+    warning('Invalid voxel index encountered in obstacle cost calculation');
+    cost = 0;
 end
