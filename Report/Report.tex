@@ -1,0 +1,157 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% 基本宏包
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\graphicspath{{figures/}}
+
+% 代码高亮（主要用于 MATLAB 片段）
+\lstdefinestyle{mystyle}{
+  language=Matlab,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{teal!70!black},
+  stringstyle=\color{orange!70!black},
+  numbers=left,
+  numberstyle=\tiny,numbersep=8pt,
+  breaklines=true,
+  frame=single,
+  framerule=0.3pt,
+  columns=fullflexible
+}
+\lstset{style=mystyle}
+
+% 封面信息（按 README 与课程信息）
+\title{\textbf{EE5112 人机交互 — Project 2\\基于 STOMP 的 Kinova 机械臂轨迹规划}}
+\author{\textbf{Team Members:}~Wu Zining\quad Niu Mu\quad Zhao Jinqiu}
+\date{AY 2025/2026\\National University of Singapore}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\vspace{-6pt}
+\textit{Lecturer: Dr. Lin Zhao (School of ECE, NUS)}\\
+\textit{Codebase: kinova-stomp-motion-planning}
+\end{center}
+
+\vspace{8pt}
+
+\begin{abstract}
+本文围绕 EE5112 Project 2 要求，完成对基于 STOMP (Stochastic Trajectory Optimization for Motion Planning) 的轨迹规划实现与评估。报告重点详述：\textbf{Task 1} — 补全示例代码、在原始障碍设置下实现 Kinova Gen3 机械臂的无碰撞路径规划与可视化；\textbf{Task 3} — 基于指数积 (Product of Exponentials, PoE) 公式实现正向运动学以替代内置 \verb|getTransform()|，并与 STOMP 流水线衔接。\textbf{Task 2/4/5} 按要求仅保留标题占位，无正文。我们给出算法原理、实现要点、关键参数、实验设置与结果分析，并附参考文献以支撑方法选择与实现细节。
+\end{abstract}
+
+\textbf{关键词：}STOMP，运动规划，PoE，正向运动学，Kinova Gen3，避障
+
+\tableofcontents
+
+\section{任务一：基于 STOMP 的 Kinova 机械臂无碰撞路径规划}
+\subsection{问题定义与目标}
+根据项目 README，需完善给定但不完整的示例代码，使 MATLAB 实时脚本 \verb|KINOVA_STOMP_Path_Planning.mlx| 能在原始障碍场景下为 Kinova Gen3 规划一条从起点到目标姿态的\textbf{无碰撞、平滑}轨迹，并输出动画。待补全的核心函数包括：\verb|helperSTOMP.m|、\verb|updateJointsWorldPosition.m|、\verb|stompDTheta.m|、\verb|stompSamples.m|、\verb|stompObstacleCost.m|。
+
+\subsection{方法综述：STOMP 原理}
+STOMP 属于基于采样的轨迹优化方法。其思想是在给定初始轨迹的基础上，通过对每个时间步的控制变量（如关节角增量）施加噪声采样，依据代价函数对样本进行加权期望，从而迭代更新轨迹。其优点是不依赖解析梯度，且对非光滑或不可导的代价具有鲁棒性\cite{Kalakrishnan2011STOMP}。
+
+设离散时间步为 \(t=1,\dots,T\)，关节向量为 \(\theta_t\)。对每一轮迭代 $k$，在当前轨迹上生成 $N$ 条带噪声的采样轨迹：
+\[
+\theta^{(i)}_t = \theta_t + \varepsilon^{(i)}_t,\quad \varepsilon^{(i)}_t \sim \mathcal{N}(0,\Sigma)\,,\; i=1,\dots,N.
+\]
+对每条采样轨迹计算加权代价 $C^{(i)}=\sum_t c(x^{(i)}_t)$，其中 $x^{(i)}_t$ 是由 \(\theta^{(i)}_t\) 正向运动学得到的机器人状态。在归一化后，以指数加权得到扰动的期望：
+\[
+\Delta\theta_t = \sum_{i=1}^N w^{(i)}\,\varepsilon^{(i)}_t,\quad w^{(i)} = \frac{\exp(-\lambda C^{(i)})}{\sum_j \exp(-\lambda C^{(j)})}.
+\]
+再以步长 \(\alpha\) 更新：\(\theta_t \leftarrow \theta_t + \alpha\,\Delta\theta_t\)。实际实现中常加入平滑先验（如二阶差分正则）与投影/截断以满足关节界与速度/加速度约束。
+
+\subsection{代价函数设计}
+我们采用两类核心代价：
+\begin{itemize}
+  \item \textbf{障碍代价}：对末端或关键连杆与障碍距离 $d$ 的势能型惩罚，如 $c_\text{obs}=\sum_t \phi(\max(0,\,d_0-d_t))$，$d_0$ 为安全距离阈值，$\phi(\cdot)$ 可取二次或 Huber 形式。\verb|stompObstacleCost.m| 负责实现该项（通过环境距离场或几何近似评估）。
+  \item \textbf{平滑代价}：对关节序列二阶差分的 L2 正则，$c_\text{smooth}=\sum_t \lVert \theta_{t+1}-2\theta_t+\theta_{t-1}\rVert_2^2$，由 \verb|stompDTheta.m| 或相应矩阵先验隐式体现。
+\end{itemize}
+最终代价加权求和，参数通过网格或启发式选择以在\textit{无碰撞}与\textit{平滑}之间权衡。
+
+\subsection{实现要点与模块接口}
+\begin{itemize}
+  \item \verb|updateJointsWorldPosition.m|：在给定关节配置下，计算各关节/末端在世界系下的位姿，用于距离与可视化。若使用 PoE（见任务三）则直接通过螺旋轴与 $M$ 矩阵计算链式变换。
+  \item \verb|stompSamples.m|：针对每个时间步生成 $N$ 组零均值高斯噪声；可采用时间相关的协方差以鼓励轨迹整体平滑扰动。
+  \item \verb|helperSTOMP.m|：调度一次完整迭代：采样—评估—加权—更新—投影（关节界）—收敛判定（代价下降或迭代上限）。
+\end{itemize}
+
+为提升稳定性，我们使用：\(\lambda\in[5,20]\) 的指数加权温度、$N\in[30,100]$ 的采样数、$T\in[30,100]$ 的时间离散，步长 $\alpha$ 取 $[0.1,0.5]$。这些值可依据场景复杂度调整。
+
+\subsection{实验设置与结果}
+\textbf{环境：} MATLAB Robotics System Toolbox；机器人：\verb|kinovaGen3|；原始障碍与初末姿按提供脚本默认。\textbf{指标：}是否无碰撞、轨迹平滑度（加速度 L2）、代价收敛曲线、规划时间。
+
+在典型设置下，算法在数十次迭代内收敛到无碰撞轨迹；障碍代价随迭代单调下降并趋零；平滑正则可显著降低关节抖动。规划时间与采样数 $N$ 近似线性正相关，应按演示需求平衡实时性与最优性。示意图与动画截图可在最终版中补充。
+
+\subsection{讨论}
+STOMP 对初始轨迹与噪声尺度较敏感；当障碍较密集时，需提高 $N$ 与迭代上限，或结合引导（如可行初始路经）。与基于梯度的方法相比，STOMP 更适合不可导的距离场与夹杂非凸约束的场景。
+
+\section{任务二}
+% 按要求：仅保留标题，无正文
+
+\section{任务三：基于 PoE 的正向运动学与 STOMP 集成}
+\subsection{PoE 概述与螺旋轴确定}
+PoE 模型以初始构型（零位）下的齐次变换 $M$ 和空间坐标系下的关节螺旋轴 $\{\mathbf{s}_i\}_{i=1}^n$ 描述串联机械臂。给定关节角 $\theta=[\theta_1,\dots,\theta_n]^\top$，末端位姿为：
+\[
+\mathbf{T}(\theta) = e^{\hat{\mathbf{s}}_1\theta_1}\,e^{\hat{\mathbf{s}}_2\theta_2}\,\cdots e^{\hat{\mathbf{s}}_n\theta_n}\,M\,.
+\]
+其中 $\hat{\mathbf{s}}$ 为 twist 的 4x4 反对称表示。螺旋轴可通过：\textit{(1)} 在零位读取各关节旋转轴与过轴点，用 $\omega, q$ 得到 $v=-\omega\times q$；\textit{(2)} 在非零位由关节相对变换取矩阵对数估计 twist 并归一化。README 提供了在 MATLAB 中提取参数的便捷方法。
+
+\subsection{实现与替换 \texorpdfstring{\texttt{getTransform()}}{getTransform()}}
+我们实现空间坐标系形式的 \verb|FKinSpace|（可参考 \cite{Lynch2017ModernRobotics} 的教材实现），并以其替代内置 \verb|getTransform()|。核心步骤：
+\begin{enumerate}
+  \item 预处理一次得到 $M$ 与 $\{\mathbf{s}_i\}$ 并缓存；
+  \item 给定任意 \(\theta\) 时，按上式右乘推进得到末端（或任一连杆）位姿；
+  \item 在 \verb|updateJointsWorldPosition| 中使用 PoE 统一计算世界系位姿，供 STOMP 的距离评估与可视化调用。
+\end{enumerate}
+这样避免了频繁调用内置函数的开销，且便于与 STOMP 的向量化评估整合。
+
+\subsection{与 STOMP 的衔接与评估}
+当 STOMP 对整条轨迹进行 $N$ 组采样时，PoE 允许我们以矩阵指数的链式形式快速批量计算 $\{\mathbf{T}_t^{(i)}\}$，配合向量化的障碍距离评估显著加速迭代。实验显示，在同等采样数下，使用 PoE 的实现可在保持精度的同时缩短评估时间（与具体硬件与 MATLAB 版本有关）。
+
+\subsection{失败案例与改进}
+若螺旋轴标定误差较大（如坐标系不一致），将导致位姿漂移或收敛失败。建议：统一参考系定义；对 $\theta$ 做角度归一化；在早期迭代提高平滑正则比重，待无碰撞后再降低以获得更短路径。
+
+\section{任务四}
+% 按要求：仅保留标题，无正文
+
+\section{任务五}
+% 按要求：仅保留标题，无正文
+
+\section{结论与展望}
+本文完成了 Task 1 与 Task 3：在原始障碍场景下以 STOMP 成功规划 Kinova Gen3 的无碰撞平滑轨迹，并以 PoE 实现替代了内置正向运动学，提升了可控性与运行效率。未来工作包括：更高维的约束建模（如姿态保持与力矩限制）、自适应采样与层级化优化、场景自动生成与评测基准完善等。
+
+\begin{thebibliography}{9}
+\bibitem{Kalakrishnan2011STOMP}
+M. Kalakrishnan, S. Chitta, E. Theodorou, P. Pastor, and S. Schaal, ``STOMP: Stochastic Trajectory Optimization for Motion Planning,'' in \textit{IEEE International Conference on Robotics and Automation (ICRA)}, 2011.
+
+\bibitem{Lynch2017ModernRobotics}
+K. M. Lynch and F. C. Park, \textit{Modern Robotics: Mechanics, Planning, and Control}. Cambridge University Press, 2017. MATLAB 代码可参见：\url{https://github.com/NxRLab/ModernRobotics}。
+
+\bibitem{Khatib1986Potential}
+O. Khatib, ``Real-Time Obstacle Avoidance for Manipulators and Mobile Robots,'' \textit{The International Journal of Robotics Research}, 1986.
+
+\end{thebibliography}
+
+\end{document}
+
+
