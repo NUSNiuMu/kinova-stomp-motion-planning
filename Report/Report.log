@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  7 NOV 2025 17:41
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  7 NOV 2025 17:49
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -753,7 +753,12 @@ Package fontspec Info:
 
 [1
 
-])
+]
+
+LaTeX Font Info:    Font shape `TU/SimSun(0)/m/sl' in size <12> not available
+(Font)              Font shape `TU/SimSun(0)/m/it' tried instead on input line 
+54.
+[2])
 \tf@toc=\write4
 \openout4 = `Report.toc'.
 
@@ -764,11 +769,6 @@ TLAB Live Script [][]\TU/lmtt/m/n/12 KINOVA_STOMP_Path_Planning.mlx
  []
 
 
-
-LaTeX Font Info:    Font shape `TU/SimSun(0)/m/sl' in size <12> not available
-(Font)              Font shape `TU/SimSun(0)/m/it' tried instead on input line 
-75.
-[2]
 
 [3]
 
@@ -796,6 +796,9 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 130.
 
 
+
+[4]
+
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 137.
 
@@ -811,34 +814,47 @@ LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
 (Font)              Font shape `TU/lmtt/b/n' tried instead on input line 145.
 
 
-[4]
-
 [5]
 
 [6]
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 267.
-
 
 [7]
 
 [8]
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 307.
 
-[9] (Report.aux)
+Overfull \hbox (53.49437pt too wide) in paragraph at lines 310--311
+[]\TU/SimSun(0)/m/n/12 我 们 在 [][]\TU/lmtt/m/n/12 updateJointsWorldPosition.m []
+\TU/SimSun(0)/m/n/12 中 实 现 \TU/lmr/m/n/12 PoE \TU/SimSun(0)/m/n/12 正 向 运 动 学，| 
+ 替 换 原 有 的 [][]\TU/lmtt/m/n/12 getTransform()
+ []
+
+
+
+[9]
+
+[10]
+
+[11]
+
+[12]
+
+[13] (Report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: 72C94BEABA55025E2FC584E6B862C6F1;4250.
+(rerunfilecheck)             Checksum: C05393582C8938DF9E33F7408567EE77;6577.
  ) 
 Here is how much of TeX's memory you used:
- 19867 strings out of 405075
- 413867 string characters out of 5504329
- 1066747 words of memory out of 5000000
- 46231 multiletter control sequences out of 15000+600000
- 636447 words of font info for 119 fonts, out of 8000000 for 9000
+ 19997 strings out of 405075
+ 419581 string characters out of 5504329
+ 1155747 words of memory out of 5000000
+ 46360 multiletter control sequences out of 15000+600000
+ 636615 words of font info for 120 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 93i,6n,111p,547b,1773s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 93i,9n,111p,547b,1777s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Report.pdf (9 pages).
+Output written on Report.pdf (13 pages).
