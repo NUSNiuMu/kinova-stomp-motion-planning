@@ -1,5 +1,6 @@
 function cost = stompObstacleCost(sphere_centers, radius, voxel_world, vel)
 
+
 safety_margin = 0.1; % safety margin (m)
 cost = 0;
 
@@ -11,6 +12,7 @@ world_size = voxel_world.world_size;
 env_corner = voxel_world.Env_size(1,:);                                 % [xmin ymin zmin]
 env_corner_vec = repmat(env_corner, length(sphere_centers), 1);
 idx = ceil((sphere_centers - env_corner_vec) ./ voxel_world.voxel_size);
+
 
 try
     % clamp indices into valid volume
@@ -30,9 +32,14 @@ try
 
     % total obstacle cost (per time-step, then summed)
     cost_array = (phi.^2) .* speed;     % quadratic penalty inside safety band
+
     cost = sum(cost_array);
 
+
 catch
+    disp('>>> stompObstacleCost: ERROR in indexing, recomputing idx (debug mode)');
     % debug fall-back: recompute idx if any invalid index happens
     idx = ceil((sphere_centers - env_corner_vec) ./ voxel_world.voxel_size);
+end
+
 end
