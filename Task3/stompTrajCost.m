@@ -1,78 +1,56 @@
-function [Stheta, Qtheta] = stompTrajCost(robot_struct, theta, R, voxel_world)
-% 计算离散轨迹每一点的局部代价 Stheta 与整条轨迹代价 Qtheta
-% - 末端约束等权（无“终点更强”时间加权）
-% - 碰撞/障碍物代价通过 stompObstacleCost 实现
+% Given a trajectory, calculate its cost
+function [Stheta, Qtheta] = stompTrajCost(robot_struct, theta,  R, voxel_world)
+% Compute the local trajectory cost at each discretization theta point, as 
+% well as the overall trajecotry cost (the Qtheta)
 
+% Costi = stompCompute_Cost(robot, theta, Env);
+% Compute the cost of all discretized points on one trajectory
 [~, nDiscretize] = size(theta);
-qo_cost = zeros(1, nDiscretize);   % 障碍物代价
-qc_cost = zeros(1, nDiscretize);   % 末端软约束（等权重）
+% Obstacle cost
+qo_cost = zeros(1, nDiscretize);
+% Constraint costs
+qc_cost = zeros(1, nDiscretize);
 
-% ---------- 读取目标与权重（兼容 rigidBodyTree / struct） ----------
-x_goal = [];
-if hasFieldOrProp(robot_struct,'ee_goal') && ~isempty(getFieldOrProp(robot_struct,'ee_goal'))
-    x_goal = getFieldOrProp(robot_struct,'ee_goal');  % [x;y;z] 或 1x3
-elseif hasFieldOrProp(robot_struct,'goal') && ~isempty(getFieldOrProp(robot_struct,'goal'))
-    x_goal = getFieldOrProp(robot_struct,'goal');
-end
-if ~isempty(x_goal), x_goal = x_goal(:); end
-
-if hasFieldOrProp(robot_struct,'w_goal') && ~isempty(getFieldOrProp(robot_struct,'w_goal'))
-    w_goal = getFieldOrProp(robot_struct,'w_goal');
-else
-    w_goal = 1e3;  % 与 1000*qo_cost 同量级，按需微调
-end
-
-% ---------- i = 1 ----------
-[X, ~] = updateJointsWorldPosition(robot_struct, theta(:,1));
-[sphere_centers, radi] = stompRobotSphere(X);
+% Get the coordinates of joints in World frame 
+[X, ~] = updateJointsWorldPosition(robot_struct, theta(:, 1));
+% Construct the spheres around the robot manipulator for collision
+% avoidance
+[sphere_centers,radi] = stompRobotSphere(X);
+% Initial velocity at the sphere centers around the manipulator is 0
 vel = zeros(length(sphere_centers), 1);
-qo_cost(1) = stompObstacleCost(sphere_centers, radi, voxel_world, vel);
+qo_cost(1) = stompObstacleCost(sphere_centers,radi, voxel_world, vel);
 
-if ~isempty(x_goal)
-    x_ee = X(1:3,end);
-    qc_cost(1) = w_goal * sum((x_ee - x_goal(1:3)).^2);  % 等权重，不随时间变化
-else
-    qc_cost(1) = 0;
-end
-
-% ---------- i = 2..n ----------
-for i = 2:nDiscretize
-    prev_centers = sphere_centers;
-
-    [X, ~] = updateJointsWorldPosition(robot_struct, theta(:,i));
+for i = 2 : nDiscretize
+    sphere_centers_prev = sphere_centers;
+    % Calculate the kinematics of the manipulator, given the
+    % configuration theta values at different time (i=2:nDiscretize)
+    [X, ~] = updateJointsWorldPosition(robot_struct, theta(:, i));
     [sphere_centers, radi] = stompRobotSphere(X);
-
-    % 碰撞/障碍：保持原有速度项（近似帧间位移范数）
-    vel = vecnorm(prev_centers - sphere_centers, 2, 2);
-    qo_cost(i) = stompObstacleCost(sphere_centers, radi, voxel_world, vel);
-
-    % 末端软约束：整段轨迹等权重
-    if ~isempty(x_goal)
-        x_ee = X(1:3,end);
-        qc_cost(i) = w_goal * sum((x_ee - x_goal(1:3)).^2);
+    % xb: 3D workspace position of sphere b at the current time
+    % Approximate speed using finite difference; align sizes if counts differ
+    if size(sphere_centers_prev,1) ~= size(sphere_centers,1)
+        m = min(size(sphere_centers_prev,1), size(sphere_centers,1));
+        scp = sphere_centers_prev(1:m, :);
+        scc = sphere_centers(1:m, :);
+        vel = vecnorm(scp - scc, 2, 2);
     else
-        qc_cost(i) = 0;
+        vel = vecnorm(sphere_centers_prev - sphere_centers, 2, 2);
     end
+    qo_cost(i) = stompObstacleCost(sphere_centers,radi, voxel_world, vel);
+    
+    %% TODO: Define your qc_cost to add constraint on the end-effector
+    qc_cost = 0;
 end
 
-% ---------- 局部代价与全局代价 ----------
+%% Local trajectory cost: you need to specify the relative weights between different costs
 Stheta = 1000*qo_cost + qc_cost;
 
-theta_mid = theta(:, 2:end-1);
-Qtheta = sum(Stheta) + 0.5 * sum(theta_mid * R * theta_mid', "all");
+
+% sum over time and add the smoothness cost
+theta = theta(:, 2:end-1);
+Qtheta = sum(Stheta) + 1/2 * sum(theta * R * theta', "all");
+
 end
 
-% ====== 辅助函数：同时兼容 struct / 对象 ======
-function tf = hasFieldOrProp(obj, name)
-    if isstruct(obj)
-        tf = isfield(obj, name);
-    else
-        % 对象（如 rigidBodyTree）
-        tf = isprop(obj, name);
-    end
-end
 
-function val = getFieldOrProp(obj, name)
-    % 统一访问方式：无论struct还是object都使用点运算符
-    val = obj.(name);
-end
+    

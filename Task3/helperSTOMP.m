@@ -1,5 +1,3 @@
-%Parameters
-% T = 5; 
 nDiscretize = 20; % number of discretized waypoint
 nPaths = 20; % number of sample paths
 convergenceThreshold = 0.1; % convergence threshhold
@@ -50,50 +48,69 @@ while abs(Qtheta - QthetaOld) > convergenceThreshold
     QthetaOld = Qtheta;
     % use tic and toc for printing out the running time
     tic
-    %% Step 1: Sample noisy trajectories (only inner knots)
-    % Generate nPaths sample trajectories by adding Gaussian noise to current theta
-    % Noise covariance: Rinv (normalized inverse of smoothness matrix R)
-    [theta_samples, em] = stompSamples(nPaths, Rinv, theta);
-    
-    %% Step 2: Calculate local trajectory cost for each sampled trajectory
-    % Evaluate cost at each time-step for all sample paths
-    % Stheta(k, t) = cost of kth sample at time-step t
+
+    [theta_samples, em] = stompSamples(nPaths, Rinv, theta); 
     Stheta = zeros(nPaths, nDiscretize);
+    
+    % Calculate cost for each sampled path k
     for k = 1:nPaths
+        % stompTrajCost should return the cost for each time step i (S_i^k)
+        % Note: The first and last waypoints are fixed, so we only care about time steps 2 to nDiscretize-1
         [S_k, ~] = stompTrajCost(robot_struct, theta_samples{k}, R, voxel_world);
         Stheta(k, :) = S_k;
     end
     
-    %% Step 3: Update trajectory probability using softmin (per time-step)
-    % Convert costs to probabilities: lower cost → higher probability
-    % Computed independently for each time-step t
-    trajProb = zeros(nPaths, nDiscretize);
-    for t = 1:nDiscretize
-        c = Stheta(:, t);
-        c = c - min(c);              % shift to avoid numerical overflow
-        s = std(c) + eps;            % temperature parameter (adaptive scaling)
-        w = exp(-c / s);             % softmin weighting
-        trajProb(:, t) = w / (sum(w) + eps);  % normalize to sum to 1
-    end
+    % Only consider cost at movable waypoints (2 to nDiscretize-1)
+    S_valid = Stheta(:, 2:nDiscretize-1); 
+
+    %% TODO: Given the local traj cost, update local trajectory probability
+    % 1. Compute Path Cost: J(theta^k) = sum(S_i^k) (excluding fixed start/end)
+    J_theta_samples = sum(S_valid, 2);
     
-    %% Step 4: Compute gradient estimate (delta theta)
-    % Use probability-weighted noise samples with unbiased baseline
-    % dtheta represents the improvement direction
+    % 2. Find minimum cost and calculate exponential cost
+    min_J = min(J_theta_samples);
+    % Exponentiated Cost (Boltzmann distribution numerator): exp_cost_k = exp(-1/eta * (J(theta^k) - min_J))
+    % eta (temperature/step-size) is typically an adjustable parameter. 
+    % We will use a typical value like eta = 10 or 100 for normalization.
+    eta = 10; 
+    
+    exp_cost = exp(-1/eta * (J_theta_samples - min_J));
+    
+    % 3. Calculate Local Trajectory Probability (P^k)
+    % P^k = exp_cost_k / sum(exp_cost)
+    P_k = exp_cost / sum(exp_cost);
+    
+    % 4. Calculate Expected Improvement (E_i^m)
+    % E_i^m = P^k (local) probability for each waypoint i and joint m
+    % This is usually done implicitly in the delta_theta calculation,
+    % but we need the probability P_k repeated for each movable waypoint.
+    
+    % 5. Weight the noise by probability: The 'trajProb' is P_k repeated for each timestep
+    % trajProb is (nPaths x (nDiscretize-2))
+    trajProb = repmat(P_k, 1, nDiscretize-2);
+    
+    %% TODO: Compute delta theta (aka gradient estimator, the improvement of the delta)
+    % dtheta: The raw improvement (gradient estimator)
+    % em_valid: The noise terms for the movable waypoints (2 to nDiscretize-1)
+    % em is a cell array (1 x numJoints), each cell is (nPaths x (nDiscretize-2))
+    
+    % The core formula is: delta_theta = Rinv * sum_k (P^k * epsilon^k)
+    % We compute 'dtheta' (sum_k P^k * epsilon^k) first using the helper function.
+    % dtheta: (numJoints x (nDiscretize-2))
     dtheta = stompDTheta(trajProb, em);
     
-    %% Step 5: Smooth and update trajectory (only inner knots)
-    % Apply smoothing matrix M and step size eta for stable convergence
-    eta = 0.3;  % learning rate (step size)
-    dtheta_smoothed = zeros(size(theta));
-    dtheta_smoothed(:, 2:nDiscretize-1) = eta * ( dtheta(:, 2:nDiscretize-1) * M );
-    theta(:, 2:nDiscretize-1) = theta(:, 2:nDiscretize-1) + dtheta_smoothed(:, 2:nDiscretize-1);
+    % Apply smoothing (Rinv) to the raw gradient: delta_theta_raw = Rinv * dtheta
+    % For each joint m: dtheta_smoothed_m = Rinv * dtheta_m
+    dtheta_smoothed = zeros(numJoints, nDiscretize - 2);
+    for m = 1:numJoints
+        dtheta_smoothed(m, :) = Rinv * dtheta(m, :)';
+    end
+
+    theta_new = theta;
+    theta_new(:, 2:nDiscretize-1) = theta(:, 2:nDiscretize-1) + dtheta_smoothed;
+    theta = theta_new;
     
-    %% Step 6: Evaluate the updated trajectory cost
     [~, Qtheta] = stompTrajCost(robot_struct, theta, R, voxel_world);
-
-
-
-
  
     toc
 
@@ -146,7 +163,7 @@ isTrajectoryInCollision = any(inCollision)
 
 
 %% Record the whole training/learning process in video file
-enableVideoTraining = 1;
+enableVideoTraining = 0;
 
 
 
@@ -181,7 +198,7 @@ close(v);
 
 
 %% Record planned trajectory to video files
-enableVideo = 1;
+enableVideo = 0;
 if enableVideo == 1
     v = VideoWriter('KinvaGen3_wEEConY3.avi');
     v.FrameRate =2;

@@ -7,32 +7,52 @@
 % OUTPUT:
 %       sphere centers and radi
 function [centers, radi] = stompRobotSphere(X)
+% 基于关节位姿为每段连杆布置一串固定数量的碰撞球
+% 目标：保证相邻时刻生成的球数量恒定，避免后续速度计算的尺寸不匹配
+
+% 固定参数
+rad = 0.1;  % 碰撞球半径（可调），同时作为间距尺度
+
 nJoints = size(X,1);
+
+% 使用 persistent 缓存每段连杆的球数量，使其在整个规划过程中保持不变
+persistent cachedCounts cachedNumJoints
+if isempty(cachedCounts) || isempty(cachedNumJoints) || cachedNumJoints ~= nJoints
+    % 首次调用（或机器人关节数变化）时，根据当前 X 确定每段的固定球数
+    cachedCounts = zeros(nJoints,1);
+    for k = 1:nJoints
+        if k==1
+            parent_joint_position = [0,0,0];
+        else
+            parent_joint_position = X(k-1, 1:3);
+        end
+        child_joint_position = X(k, 1:3);
+        L = norm(child_joint_position - parent_joint_position);
+        % 至少放置 2 个球，且按长度与半径估计需要的数量
+        cachedCounts(k) = max(2, ceil(L / rad) + 1);
+    end
+    cachedNumJoints = nJoints;
+end
+
 center_cell = cell(nJoints,1);
 radi_cell = cell(nJoints,1);
-% consturct the spheres for all links
-for k=1:size(X,1)
-    % Make sure that there is a non-trivial link (i.e., link length is not
-    % zero) between joint k=1 and joint k=2. Because sometimes the robot
-    % URDF contains multiple bases that located at the same origin. Only
-    % their orientation is different.
+
+% 构造所有连杆的球心与半径（使用固定数量）
+for k=1:nJoints
     if k==1
-        parent_joint_position = [0,0,0]; 
+        parent_joint_position = [0,0,0];
     else
         parent_joint_position = X(k-1, 1:3);
     end
-    child_joint_poisition = X(k, 1:3);
-    % number of spheres used to cover the kth link
-    rad = 0.1;  % radius of the sphere, tuning parameters 
-    % calculate the number of shperes to cover the link
-    nSpheres = ceil(norm(child_joint_poisition-parent_joint_position)/rad)+1; % one sphere every 0.05m
-    % Calculate the centers of the spheres
-    center_cell_k = arrayfun(@(x1, x2) linspace(x1,x2,nSpheres), parent_joint_position', child_joint_poisition','UniformOutput', false);
-    % xyz coordinates of each sphere
+    child_joint_position = X(k, 1:3);
+
+    nSpheres = cachedCounts(k);
+    % 按固定数量在父—子关节之间做线性插值
+    center_cell_k = arrayfun(@(x1, x2) linspace(x1, x2, nSpheres), ...
+                             parent_joint_position', child_joint_position', 'UniformOutput', false);
     center_cell{k} = cell2mat(center_cell_k)';
-    % radius of each sphere
-    radi_cell{k} = rad*ones(size(center_cell{k},1),1);
-end    
+    radi_cell{k} = rad * ones(size(center_cell{k},1), 1);
+end
 
 centers = cell2mat(center_cell);
 radi = cell2mat(radi_cell);
