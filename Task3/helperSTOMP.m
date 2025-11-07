@@ -198,7 +198,7 @@ close(v);
 
 
 %% Record planned trajectory to video files
-enableVideo = 0;
+enableVideo = 0;  %是否保存轨迹视频，0为不保存，1为保存
 if enableVideo == 1
     v = VideoWriter('KinvaGen3_wEEConY3.avi');
     v.FrameRate =2;

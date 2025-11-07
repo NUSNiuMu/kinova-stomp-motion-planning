@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  6 NOV 2025 23:15
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  7 NOV 2025 17:41
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -758,50 +758,87 @@ Package fontspec Info:
 \openout4 = `Report.toc'.
 
 
-Overfull \hbox (16.89589pt too wide) in paragraph at lines 68--69
-[][]\TU/lmtt/m/n/12 updateJointsWorldPosition.m[]\TU/SimSun(0)/m/n/12 、| [][]\T
-U/lmtt/m/n/12 stompDTheta.m[]\TU/SimSun(0)/m/n/12 、| [][]\TU/lmtt/m/n/12 stompS
-amples.m[]\TU/SimSun(0)/m/n/12 、| [][]\TU/lmtt/m/n/12 stompObstacleCost.m[]\TU/
-SimSun(0)/m/n/12 。| 
+Overfull \hbox (89.29837pt too wide) in paragraph at lines 69--70
+[]\TU/SimSun(0)/m/n/12 本 任 务 要 求 完 善 给 定 的 不 完 整 示 例 代 码，|  使 \TU/lmr/m/n/12 MA
+TLAB Live Script [][]\TU/lmtt/m/n/12 KINOVA_STOMP_Path_Planning.mlx
  []
 
 
 
 LaTeX Font Info:    Font shape `TU/SimSun(0)/m/sl' in size <12> not available
 (Font)              Font shape `TU/SimSun(0)/m/it' tried instead on input line 
-86.
+75.
 [2]
-Overfull \hbox (9.41594pt too wide) in paragraph at lines 86--87
-[]\TU/SimSun(0)/b/n/12 障 碍 代 价\TU/SimSun(0)/m/n/12 ：|  对 末 端 或 关 键 连 杆 与 障 碍 距 
-离 $\OML/cmm/m/it/12 d$ \TU/SimSun(0)/m/n/12 的 势 能 型 惩 罚，|  如 $\OML/cmm/m/it/12 
-c[] \OT1/cmr/m/n/12 = [][] \OML/cmm/m/it/12 ^^^\OT1/cmr/m/n/12 ([](0\OML/cmm/m/
-it/12 ;  d[] \OMS/cmsy/m/n/12 ^^@
- []
-
-
 
 [3]
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 119.
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 123.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `subscript' on input line 123.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 123.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 130.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `subscript' on input line 130.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 130.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 137.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `subscript' on input line 137.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 137.
+
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 145.
 
 
 [4]
 
-[5] (Report.aux)
+[5]
+
+[6]
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 267.
+
+
+[7]
+
+[8]
+
+[9] (Report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: 3F4AFD4F6918D5460A5D8D5F515A9656;2063.
+(rerunfilecheck)             Checksum: 72C94BEABA55025E2FC584E6B862C6F1;4250.
  ) 
 Here is how much of TeX's memory you used:
- 19241 strings out of 405075
- 405671 string characters out of 5504329
- 998747 words of memory out of 5000000
- 45611 multiletter control sequences out of 15000+600000
- 636415 words of font info for 115 fonts, out of 8000000 for 9000
+ 19867 strings out of 405075
+ 413867 string characters out of 5504329
+ 1066747 words of memory out of 5000000
+ 46231 multiletter control sequences out of 15000+600000
+ 636447 words of font info for 119 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 93i,6n,111p,547b,556s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 93i,6n,111p,547b,1773s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Report.pdf (5 pages).
+Output written on Report.pdf (9 pages).

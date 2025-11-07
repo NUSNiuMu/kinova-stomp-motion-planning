@@ -39,7 +39,7 @@ for i = 2 : nDiscretize
     qo_cost(i) = stompObstacleCost(sphere_centers,radi, voxel_world, vel);
     
     %% TODO: Define your qc_cost to add constraint on the end-effector
-    qc_cost = 0;
+    qc_cost(i) = 0;
 end
 
 %% Local trajectory cost: you need to specify the relative weights between different costs
