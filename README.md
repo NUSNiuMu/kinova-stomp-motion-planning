@@ -206,11 +206,7 @@ getTransform(robot, robot.homeConfiguration, robot.BodyNames{2}, 'base_link') % 
     代价可取残差向量的 L₁ 范数：
 
     $$
-    [
-
     |ŷ_{sb} - ẑ_s| *1 = \sum_i |ŷ* {sb}(i) - ẑ_s(i)|
-
-    ]
     $$
 
     MATLAB 计算方式：`norm(y_sb - z_s, 1)`
