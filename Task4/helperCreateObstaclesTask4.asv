@@ -1,0 +1,246 @@
+%% Task4: Construct voxel obstacle representation with multiple obstacles
+% Define the workspace (voxel world limits)
+Env_size = [-1, -1, -1; 2, 2, 2];  % [xmin, ymin, zmin] and [xlen, ylen, zlen]
+voxel_size = [0.02, 0.02, 0.02];    % meters
+% Allow finer grid override from run script
+if evalin('base','exist(''voxel_size_override'',''var'')')
+    voxel_size = evalin('base','voxel_size_override');
+end
+
+% Binary map: all free initially (dimensions in order: X-by-Y-by-Z)
+% Ensure integer grid sizes from metric lengths and voxel resolution
+grid_size = max([1 1 1], floor(Env_size(2,:)./voxel_size));
+binary_world = zeros(grid_size(1), grid_size(2), grid_size(3));
+
+%% Define static obstacles (axis-aligned boxes)
+% Default parameters
+wall_len_x = 0.30; wall_thick_y = 0.06; wall_height_z = 0.25;
+base_z = 0.30; gap_y_center_default = 0.38;
+% Allow user overrides
+gap_y = 0.10; % default gap width (meters)
+if exist('corridor_gap_y','var'); gap_y = corridor_gap_y; end
+if exist('corridor_wall_thick_y','var'); wall_thick_y = corridor_wall_thick_y; end
+
+world = {};
+boxes = {};            % axis-aligned boxes: {center, dims}
+oriented_boxes = {};   % oriented boxes: {center, dims, R}
+
+if exist('obstacles_config','var')
+    % Manual obstacles override all defaults (axis-aligned only)
+    for b = 1:size(obstacles_config,1)
+        c = obstacles_config{b,1}; d = obstacles_config{b,2};
+        obj = collisionBox(d(1), d(2), d(3)); obj.Pose = trvec2tform(c);
+        world{end+1} = obj; %#ok<AGROW>
+    end
+    boxes = obstacles_config;
+else
+    % Scene type: zigzag vs simple corridor
+    scene = 'corridor';
+    %scene_type = 'zigzag';
+    if exist('scene_type','var'); scene = scene_type; end
+
+    % If a dedicated scenario_id is provided, build from the four designed scenarios
+    if exist('scenario_id','var')
+        % Clear any defaults
+        world = {}; boxes = {}; oriented_boxes = {};
+        switch scenario_id
+            case 1
+                % 场景1：斜墙阻断（两面倾斜墙形成角度走廊）
+                alpha = deg2rad(25);
+                Rz = axang2rotm([0 0 1 alpha]);
+                Rz2 = axang2rotm([0 0 1 -20*pi/180]);
+                dims = [0.35, 0.04, 0.25];
+                c1 = [0.52, 0.1, 0.60];
+                c2 = [0.62, 0.44, 0.30];
+                % visual objects
+                w1 = collisionBox(dims(1), dims(2), dims(3)); w1.Pose = trvec2tform(c1) * rotm2tform(Rz);
+                w2 = collisionBox(dims(1), dims(2), dims(3)); w2.Pose = trvec2tform(c2) * rotm2tform(Rz2);
+                world{end+1} = w1; world{end+1} = w2;
+                oriented_boxes(end+1,:) = {c1, dims, Rz};
+                oriented_boxes(end+1,:) = {c2, dims, Rz2};
+                % 辅助窄口（轴对齐短墙）
+                boxes(end+1,:) = {[0.56, 0.40, 0.30], [0.12, 0.04, 0.20]};
+
+            case 2
+                % 场景2：高低障碍（低斜板 + 高横梁，需改变高度）
+                % 低斜板（绕Y轴倾斜）
+                beta = deg2rad(25);
+                Ry = axang2rotm([0 1 0 beta]);
+                dims1 = [0.40, 0.20, 0.06];
+                c1 = [0.55, 0.05, 0.62];
+                slab = collisionBox(dims1(1), dims1(2), dims1(3)); slab.Pose = trvec2tform(c1) * rotm2tform(Ry);
+                world{end+1} = slab; oriented_boxes(end+1,:) = {c1, dims1, Ry};
+                % 高横梁（轴对齐，限制上方）
+                boxes(end+1,:) = {[0.60, 0.42, 0.48], [0.35, 0.25, 0.06]};
+
+            case 3
+                % 场景3：组合场景（case1 + case2）
+                % 斜墙阻断（两面绕 z 轴倾斜的墙）
+                alpha = deg2rad(25);
+                Rz = axang2rotm([0 0 1 alpha]);
+                Rz2 = axang2rotm([0 0 1 -20*pi/180]);
+                dims_z = [0.35, 0.04, 0.25];
+                c1_z = [0.52, 0., 0.60];
+                c2_z = [0.62, 0.44, 0.30];
+                w1 = collisionBox(dims_z(1), dims_z(2), dims_z(3)); w1.Pose = trvec2tform(c1_z) * rotm2tform(Rz);
+                w2 = collisionBox(dims_z(1), dims_z(2), dims_z(3)); w2.Pose = trvec2tform(c2_z) * rotm2tform(Rz2);
+                world{end+1} = w1; world{end+1} = w2;
+                oriented_boxes(end+1,:) = {c1_z, dims_z, Rz};
+                oriented_boxes(end+1,:) = {c2_z, dims_z, Rz2};
+                % 辅助窄口（轴对齐短墙）
+                boxes(end+1,:) = {[0.56, 0.40, 0.30], [0.12, 0.04, 0.20]};
+
+                % 低斜板（绕 y 轴倾斜）+ 高横梁
+                beta = deg2rad(25);
+                Ry = axang2rotm([0 1 0 beta]);
+                dims_y = [0.40, 0.20, 0.06];
+                c1_y = [0.35, 0.3, 0.7];
+                slab = collisionBox(dims_y(1), dims_y(2), dims_y(3)); slab.Pose = trvec2tform(c1_y) * rotm2tform(Ry);
+                world{end+1} = slab; oriented_boxes(end+1,:) = {c1_y, dims_y, Ry};
+                % 上方横梁（轴对齐）
+                boxes(end+1,:) = {[0.60, 0.42, 0.48], [0.35, 0.25, 0.06]};
+
+            case 4
+                % 场景4：交错砖块（多块小型倾斜砖形成穿越路径）
+                ang = deg2rad(20);
+                Rpos = axang2rotm([0 0 1 ang]); Rneg = axang2rotm([0 0 1 -ang]);
+                dimsB = [0.18, 0.06, 0.20];
+                C = [
+                    0.48 0.34 0.30;
+                    0.52 0.40 0.30;
+                    0.58 0.36 0.30;
+                    0.64 0.42 0.30
+                ];
+                Rs = {Rpos, Rneg, Rpos, Rneg};
+                for i = 1:size(C,1)
+                    cb = collisionBox(dimsB(1), dimsB(2), dimsB(3)); cb.Pose = trvec2tform(C(i,:)) * rotm2tform(Rs{i});
+                    world{end+1} = cb; oriented_boxes(end+1,:) = {C(i,:), dimsB, Rs{i}};
+                end
+                % 辅助薄墙（轴对齐）
+                boxes(end+1,:) = {[0.70, 0.44, 0.30], [0.12, 0.04, 0.22]};
+
+            otherwise
+                % Fallback to simple corridor when scenario_id invalid
+                scene = 'corridor';
+            end
+
+            % If scenario was handled above, skip default zigzag/corridor below
+            if exist('scenario_id','var') && ismember(scenario_id, 1:4)
+                % proceed to voxelization
+            else
+                % fall through to default scenes
+            end
+    end
+
+    if exist('scenario_id','var') && ismember(scenario_id, 1:4)
+        % skip default scenes
+    elseif strcmpi(scene,'zigzag')
+        % Staggered corridor segments forming a zigzag path
+        % Allow parameterization via 'zigzag_segments' (N x 3) rows: [x, y_center, z]
+        if exist('zigzag_segments','var') && size(zigzag_segments,2)==3
+            segments = zigzag_segments;
+        else
+            segments = [
+                0.45, 0.34, base_z;  % x, y_center, z (defaults)
+                0.55, 0.42, base_z;
+                0.65, 0.34, base_z
+            ];
+        end
+        % Allow overriding wall length/height for zigzag specifically
+        if exist('zigzag_wall_len_x','var'); wall_len_x = zigzag_wall_len_x; end
+        if exist('zigzag_wall_height_z','var'); wall_height_z = zigzag_wall_height_z; end
+        for s = 1:size(segments,1)
+            sx = segments(s,1); syc = segments(s,2); sz = segments(s,3);
+            left_center  = [sx, syc - (gap_y/2 + wall_thick_y/2), sz];
+            right_center = [sx, syc + (gap_y/2 + wall_thick_y/2), sz];
+            left_wall  = collisionBox(wall_len_x, wall_thick_y, wall_height_z);  left_wall.Pose  = trvec2tform(left_center);
+            right_wall = collisionBox(wall_len_x, wall_thick_y, wall_height_z);  right_wall.Pose = trvec2tform(right_center);
+            world{end+1} = left_wall; world{end+1} = right_wall;
+            boxes(end+1,:) = {left_center,  [wall_len_x, wall_thick_y, wall_height_z]}; %#ok<AGROW>
+            boxes(end+1,:) = {right_center, [wall_len_x, wall_thick_y, wall_height_z]}; %#ok<AGROW>
+        end
+        % Central pillar to tighten passage (parameterized)
+        pillar_enable = true; pillar_center = [0.58, 0.38, 0.30]; pillar_dims = [0.08, 0.08, 0.25];
+        if exist('zigzag_pillar_enable','var'); pillar_enable = zigzag_pillar_enable; end
+        if exist('zigzag_pillar_center','var') && numel(zigzag_pillar_center)==3; pillar_center = zigzag_pillar_center; end
+        if exist('zigzag_pillar_dims','var') && numel(zigzag_pillar_dims)==3; pillar_dims = zigzag_pillar_dims; end
+        if pillar_enable
+            pillar = collisionBox(pillar_dims(1), pillar_dims(2), pillar_dims(3)); pillar.Pose = trvec2tform(pillar_center);
+            world{end+1} = pillar; boxes(end+1,:) = {pillar_center, pillar_dims};
+        end
+        % Overhead beam to constrain Z clearance (parameterized)
+        beam_enable = true; beam_center = [0.58, 0.38, 0.45]; beam_dims = [0.25, 0.25, 0.05];
+        if exist('zigzag_beam_enable','var'); beam_enable = zigzag_beam_enable; end
+        if exist('zigzag_beam_center','var') && numel(zigzag_beam_center)==3; beam_center = zigzag_beam_center; end
+        if exist('zigzag_beam_dims','var') && numel(zigzag_beam_dims)==3; beam_dims = zigzag_beam_dims; end
+        if beam_enable
+            beam = collisionBox(beam_dims(1), beam_dims(2), beam_dims(3)); beam.Pose = trvec2tform(beam_center);
+            world{end+1} = beam; boxes(end+1,:) = {beam_center, beam_dims};
+        end
+        % Low table (optional)
+        table_enable = false; % default off to reduce difficulty
+        if exist('zigzag_table_enable','var'); table_enable = zigzag_table_enable; end
+        if table_enable
+            table_center = [0.30, 0.30, 0.05]; table_dims = [0.70, 0.50, 0.10];
+            table = collisionBox(table_dims(1), table_dims(2), table_dims(3));
+            table.Pose = trvec2tform(table_center);
+            world{end+1} = table; boxes(end+1,:) = {table_center, table_dims};
+        end
+    else
+        % Simple corridor with two walls, one pillar, one table
+        wall_x = 0.50; gap_y_center = gap_y_center_default; sz = base_z;
+        left_center  = [wall_x, gap_y_center - (gap_y/2 + wall_thick_y/2), sz];
+        right_center = [wall_x, gap_y_center + (gap_y/2 + wall_thick_y/2), sz];
+        left_wall  = collisionBox(wall_len_x, wall_thick_y, wall_height_z);  left_wall.Pose  = trvec2tform(left_center);
+        right_wall = collisionBox(wall_len_x, wall_thick_y, wall_height_z);  right_wall.Pose = trvec2tform(right_center);
+        world = {left_wall, right_wall};
+        boxes = {left_center, [wall_len_x,  wall_thick_y, wall_height_z];
+                 right_center,[wall_len_x,  wall_thick_y, wall_height_z]};
+        pillar_center = [0.55, gap_y_center, 0.30]; pillar_dims = [0.08, 0.08, 0.20];
+        pillar = collisionBox(pillar_dims(1), pillar_dims(2), pillar_dims(3)); pillar.Pose = trvec2tform(pillar_center);
+        world{end+1} = pillar; boxes(end+1,:) = {pillar_center, pillar_dims};
+        % Low table (optional)
+        table_enable = false; % default off to reduce difficulty
+        if exist('corridor_table_enable','var'); table_enable = corridor_table_enable; end
+        if table_enable
+            table_center = [0.30, 0.30, 0.05]; table_dims = [0.70, 0.50, 0.10];
+            table = collisionBox(table_dims(1), table_dims(2), table_dims(3)); table.Pose = trvec2tform(table_center);
+            world{end+1} = table; boxes(end+1,:) = {table_center, table_dims};
+        end
+    end
+end
+
+%% Voxelize obstacles into binary_world
+xmin = Env_size(1,1); ymin = Env_size(1,2); zmin = Env_size(1,3);
+
+% Boxes to voxelize are collected in 'boxes' and 'oriented_boxes'
+
+for b = 1:size(boxes,1)
+    c = boxes{b,1}; d = boxes{b,2};
+    xmin_b = c(1) - d(1)/2; xmax_b = c(1) + d(1)/2;
+    ymin_b = c(2) - d(2)/2; ymax_b = c(2) + d(2)/2;
+    zmin_b = c(3) - d(3)/2; zmax_b = c(3) + d(3)/2;
+
+    xi1 = max(1, ceil((xmin_b - xmin)/voxel_size(1))); xi2 = min(size(binary_world,1), floor((xmax_b - xmin)/voxel_size(1)));
+    yi1 = max(1, ceil((ymin_b - ymin)/voxel_size(2))); yi2 = min(size(binary_world,2), floor((ymax_b - ymin)/voxel_size(2)));
+    zi1 = max(1, ceil((zmin_b - zmin)/voxel_size(3))); zi2 = min(size(binary_world,3), floor((zmax_b - zmin)/voxel_size(3)));
+
+    if xi1<=xi2 && yi1<=yi2 && zi1<=zi2
+        binary_world(xi1:xi2, yi1:yi2, zi1:zi2) = 1;
+    end
+end
+
+% Voxelize oriented boxes
+for b = 1:size(oriented_boxes,1)
+    c = oriented_boxes{b,1}; d = oriented_boxes{b,2}; R = oriented_boxes{b,3};
+    binary_world = helperVoxelizeOrientedBox(binary_world, Env_size, voxel_size, c, d, R);
+end
+
+%% Signed Euclidean Distance Transform (meters)
+voxel_world_sEDT = sEDT_3d(binary_world) .* voxel_size(1);
+
+% Pack voxel world struct
+voxel_world.world_size = size(binary_world);
+voxel_world.Env_size   = Env_size;
+voxel_world.voxel_size = voxel_size; % keep full [x y z] vector
+voxel_world.sEDT       = voxel_world_sEDT;
