@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  10 NOV 2025 15:50
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  11 NOV 2025 22:45
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -757,10 +757,12 @@ Package fontspec Info:
 
 LaTeX Font Info:    Font shape `TU/SimSun(0)/m/sl' in size <12> not available
 (Font)              Font shape `TU/SimSun(0)/m/it' tried instead on input line 
-52.
+50.
 [2]
 
-[3])
+[3]
+
+[4])
 \tf@toc=\write4
 \openout4 = `Report.toc'.
 
@@ -772,7 +774,7 @@ TLAB Live Script [][]\TU/lmtt/m/n/12 KINOVA_STOMP_Path_Planning.mlx
 
 
 
-[4]
+[5]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 123.
@@ -785,9 +787,6 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 123.
 
-
-
-[5]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 130.
@@ -812,31 +811,55 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 137.
 
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 145.
 
 
 [6]
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 145.
+
 
 [7]
 
 [8]
 
 [9]
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 307.
 
-Overfull \hbox (53.49437pt too wide) in paragraph at lines 310--311
-[]\TU/SimSun(0)/m/n/12 我 们 在 [][]\TU/lmtt/m/n/12 updateJointsWorldPosition.m []
-\TU/SimSun(0)/m/n/12 中 实 现 \TU/lmr/m/n/12 PoE \TU/SimSun(0)/m/n/12 正 向 运 动 学，| 
- 替 换 原 有 的 [][]\TU/lmtt/m/n/12 getTransform()
+[10]
+Overfull \hbox (35.66273pt too wide) in paragraph at lines 292--293
+[]\TU/SimSun(0)/m/n/12 支 持 的 机 器 人 名 称 包 括：| [][]\TU/lmtt/m/n/12 'abbIrb120'[]\
+TU/SimSun(0)/m/n/12 、| [][]\TU/lmtt/m/n/12 'frankaEmikaPanda'[]\TU/SimSun(0)/m/
+n/12 、| [][]\TU/lmtt/m/n/12 'kinovaGen3'[]\TU/SimSun(0)/m/n/12 、| [][]\TU/lmtt/
+m/n/12 'kukaIiwa7'[]\TU/SimSun(0)/m/n/12 、|
  []
 
 
 
-[10]
-
 [11]
+
+LaTeX Warning: Reference `fig:task2_robots_1' on page 12 undefined on input lin
+e 328.
+
+
+LaTeX Warning: Reference `fig:task2_robots_2' on page 12 undefined on input lin
+e 328.
+
+File: Figures/Task2/abbIrb120.png Graphic file (type bmp)
+<Figures/Task2/abbIrb120.png>
+File: Figures/Task2/frankaEmikaPanda.png Graphic file (type bmp)
+<Figures/Task2/frankaEmikaPanda.png>
+File: Figures/Task2/kinovaGen3.png Graphic file (type bmp)
+<Figures/Task2/kinovaGen3.png>
+File: Figures/Task2/kukaIiwa7.png Graphic file (type bmp)
+<Figures/Task2/kukaIiwa7.png>
+File: Figures/Task2/rethinkSawyer.png Graphic file (type bmp)
+<Figures/Task2/rethinkSawyer.png>
+File: Figures/Task2/universalUR10.png Graphic file (type bmp)
+<Figures/Task2/universalUR10.png>
+File: Figures/Task2/universalUR3.png Graphic file (type bmp)
+<Figures/Task2/universalUR3.png>
+File: Figures/Task2/universalUR5.png Graphic file (type bmp)
+<Figures/Task2/universalUR5.png>
+
 
 [12]
 
@@ -845,6 +868,16 @@ Overfull \hbox (53.49437pt too wide) in paragraph at lines 310--311
 [14]
 
 [15]
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 499.
+
+Overfull \hbox (53.49437pt too wide) in paragraph at lines 502--503
+[]\TU/SimSun(0)/m/n/12 我 们 在 [][]\TU/lmtt/m/n/12 updateJointsWorldPosition.m []
+\TU/SimSun(0)/m/n/12 中 实 现 \TU/lmr/m/n/12 PoE \TU/SimSun(0)/m/n/12 正 向 运 动 学，| 
+ 替 换 原 有 的 [][]\TU/lmtt/m/n/12 getTransform()
+ []
+
+
 
 [16]
 
@@ -864,21 +897,40 @@ Overfull \hbox (53.49437pt too wide) in paragraph at lines 310--311
 
 [24]
 
-[25] (Report.aux)
+[25]
+
+[26]
+
+[27]
+
+[28]
+
+[29]
+
+[30]
+
+[31] (Report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: 966229D97C7A34AF4FA63AD8972B1782;11935.
+(rerunfilecheck)             Checksum: 89CBE7C30F110610A1C651B7709CA509;14308.
  ) 
 Here is how much of TeX's memory you used:
- 20104 strings out of 405075
- 422052 string characters out of 5504329
- 1160747 words of memory out of 5000000
- 46465 multiletter control sequences out of 15000+600000
+ 20210 strings out of 405075
+ 425097 string characters out of 5504329
+ 1156747 words of memory out of 5000000
+ 46561 multiletter control sequences out of 15000+600000
  636631 words of font info for 122 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 93i,9n,111p,665b,1777s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 93i,9n,111p,749b,1777s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Report.pdf (25 pages).
+Output written on Report.pdf (31 pages).
