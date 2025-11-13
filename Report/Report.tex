@@ -456,6 +456,31 @@ end
   \item \textbf{安全裕度}：根据机器人尺寸调整 \verb|safety_margin|（范围 0.05-0.10 m）
 \end{itemize}
 
+\subsubsection{Franka Emika Panda 末端执行器处理}
+Franka Emika Panda 机器人存在特殊的末端执行器定义问题，需要特别处理：
+
+\paragraph{问题描述}
+Franka Emika Panda 模型的默认末端执行器是\textbf{手部框架}（\verb|panda_hand|），而非\textbf{指尖 TCP}（Tool Center Point）。如果直接使用 \verb|panda_hand| 进行逆运动学（IK）或运动规划，会导致机器人手部到达目标位置时，指尖穿透目标表面，造成碰撞问题。
+
+\paragraph{解决方案}
+我们提供了两种解决方案：
+
+\textbf{方案 A：目标位姿偏移补偿}
+在目标位姿处进行偏移补偿，调整目标位置而非修改机器人模型：
+\[
+T_{\text{goal,hand}} = \begin{bmatrix} R_{\text{goal}} & p_{\text{goal}} + R_{\text{hand}} \Delta p_{\text{local}} \\ \mathbf{0} & 1 \end{bmatrix}
+\]
+其中 $\Delta p_{\text{local}}$ 为手部局部坐标系中的小偏移量（通常向上或向外），$R_{\text{hand}}$ 为手部旋转矩阵。该方案简单直接，适用于目标位置可调整的场景。
+
+\textbf{方案 B：添加固定关节定义指尖 TCP}
+在机器人模型中添加一个名为 \verb|tool| 的固定刚体，通过固定变换连接到手掌框架（\verb|panda_hand|），使新的工具中心点（TCP）与指尖位置对齐，并可选择向下定向：
+\[
+{}^{\text{hand}}T_{\text{tool}} = \begin{bmatrix} R_{ht} & t_{ht} \\ \mathbf{0} & 1 \end{bmatrix}
+\]
+其中 $R_{ht}$ 和 $t_{ht}$ 分别表示工具框架相对于手部框架的旋转和平移。该方案更符合机器人学标准实践，适用于需要精确TCP定义的复杂任务。
+
+在实际实现中，我们根据具体场景选择合适的方案，确保 Franka Panda 能够成功规划无碰撞轨迹。
+
 \subsubsection{性能优化}
 \begin{itemize}
   \item \textbf{缓存机制}：螺旋轴和零位变换矩阵仅计算一次，适用于所有机器人
