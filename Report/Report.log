@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  13 NOV 2025 16:20
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  13 NOV 2025 17:01
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -749,15 +749,15 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
 (fontspec)             <->"FangSong/OT:script=hani;language=dflt;"
 
- (Report.toc
+
 
 [1
 
-]
+] (Report.toc
 
 LaTeX Font Info:    Font shape `TU/SimSun(0)/m/sl' in size <12> not available
 (Font)              Font shape `TU/SimSun(0)/m/it' tried instead on input line 
-54.
+41.
 [2]
 
 [3]
@@ -767,27 +767,8 @@ LaTeX Font Info:    Font shape `TU/SimSun(0)/m/sl' in size <12> not available
 \openout4 = `Report.toc'.
 
 
-Overfull \hbox (89.29837pt too wide) in paragraph at lines 69--70
-[]\TU/SimSun(0)/m/n/12 本 任 务 要 求 完 善 给 定 的 不 完 整 示 例 代 码，|  使 \TU/lmr/m/n/12 MA
-TLAB Live Script [][]\TU/lmtt/m/n/12 KINOVA_STOMP_Path_Planning.mlx
- []
-
-
 
 [5]
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 123.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `subscript' on input line 123.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 123.
-
-
 
 [6]
 
@@ -802,6 +783,9 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 141.
 
+
+
+[7]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 148.
@@ -818,23 +802,48 @@ LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
 (Font)              Font shape `TU/lmtt/b/n' tried instead on input line 156.
 
 
-[7]
-
 [8]
 
 [9]
-
-[10]
-Overfull \hbox (35.66273pt too wide) in paragraph at lines 309--310
-[]\TU/SimSun(0)/m/n/12 支 持 的 机 器 人 名 称 包 括：| [][]\TU/lmtt/m/n/12 'abbIrb120'[]\
-TU/SimSun(0)/m/n/12 、| [][]\TU/lmtt/m/n/12 'frankaEmikaPanda'[]\TU/SimSun(0)/m/
-n/12 、| [][]\TU/lmtt/m/n/12 'kinovaGen3'[]\TU/SimSun(0)/m/n/12 、| [][]\TU/lmtt/
-m/n/12 'kukaIiwa7'[]\TU/SimSun(0)/m/n/12 、|
+Overfull \hbox (3.88788pt too wide) in paragraph at lines 244--245
+[]\TU/lmr/m/n/12 The final trajectory passes collision detection ([][]\TU/lmtt/
+m/n/12 isTrajectoryInCollision = false[]\TU/lmr/m/n/12 ) 
  []
 
 
 
+[10]
+
 [11]
+
+
+Overfull \hbox (29.14685pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 2 TASK 2: STOMP ALGORITHM VALIDATION ON MULTIPLE ROBOT PLATFORM
+S \TU/lmr/m/n/12 12
+ []
+
+[12]
+Overfull \hbox (2.88554pt too wide) in paragraph at lines 309--310
+[]\TU/lmr/m/n/12 Supported robot names include: [][]\TU/lmtt/m/n/12 'abbIrb120'
+[]\TU/lmr/m/n/12 , [][]\TU/lmtt/m/n/12 'frankaEmikaPanda'[]\TU/lmr/m/n/12 , [][
+]\TU/lmtt/m/n/12 'kinovaGen3'[]\TU/lmr/m/n/12 ,
+ []
+
+
+
+
+Overfull \hbox (29.14685pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 2 TASK 2: STOMP ALGORITHM VALIDATION ON MULTIPLE ROBOT PLATFORM
+S \TU/lmr/m/n/12 13
+ []
+
+[13]
+Overfull \hbox (89.25594pt too wide) in paragraph at lines 340--341
+[]\TU/lmr/bx/n/12 Video recording function\TU/lmr/m/n/12 : Support recording tr
+aining process animations ([][]\TU/lmtt/m/n/12 enableVideoTraining[]\TU/lmr/m/n
+/12 )
+ []
+
 File: Figures/Task2/abbIrb120.png Graphic file (type bmp)
 <Figures/Task2/abbIrb120.png>
 File: Figures/Task2/frankaEmikaPanda.png Graphic file (type bmp)
@@ -847,22 +856,65 @@ File: Figures/Task2/rethinkSawyer.png Graphic file (type bmp)
 <Figures/Task2/rethinkSawyer.png>
 File: Figures/Task2/universalUR10.png Graphic file (type bmp)
 <Figures/Task2/universalUR10.png>
-
-
-[12]
 File: Figures/Task2/universalUR3.png Graphic file (type bmp)
 <Figures/Task2/universalUR3.png>
 File: Figures/Task2/universalUR5.png Graphic file (type bmp)
 <Figures/Task2/universalUR5.png>
 
 
-[13]
+
+Overfull \hbox (29.14685pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 2 TASK 2: STOMP ALGORITHM VALIDATION ON MULTIPLE ROBOT PLATFORM
+S \TU/lmr/m/n/12 14
+ []
 
 [14]
 
+
+Overfull \hbox (29.14685pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 2 TASK 2: STOMP ALGORITHM VALIDATION ON MULTIPLE ROBOT PLATFORM
+S \TU/lmr/m/n/12 15
+ []
+
 [15]
 
+
+Overfull \hbox (29.14685pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 2 TASK 2: STOMP ALGORITHM VALIDATION ON MULTIPLE ROBOT PLATFORM
+S \TU/lmr/m/n/12 16
+ []
+
 [16]
+
+
+Overfull \hbox (29.14685pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 2 TASK 2: STOMP ALGORITHM VALIDATION ON MULTIPLE ROBOT PLATFORM
+S \TU/lmr/m/n/12 17
+ []
+
+[17]
+Overfull \hbox (4.03595pt too wide) in paragraph at lines 498--499
+[]\TU/lmr/bx/n/12 Scalability\TU/lmr/m/n/12 : The unified interface design make
+s adding new robot platforms straight-
+ []
+
+
+
+
+Overfull \hbox (29.14685pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 2 TASK 2: STOMP ALGORITHM VALIDATION ON MULTIPLE ROBOT PLATFORM
+S \TU/lmr/m/n/12 18
+ []
+
+[18]
+
+
+Overfull \hbox (8.70815pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 3 TASK 3: FORWARD KINEMATICS IMPLEMENTATION USING POE FORMULA \
+TU/lmr/m/n/12 19
+ []
+
+[19]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 551.
@@ -877,82 +929,128 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 
 
 
-[17]
+
+Overfull \hbox (8.70815pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 3 TASK 3: FORWARD KINEMATICS IMPLEMENTATION USING POE FORMULA \
+TU/lmr/m/n/12 20
+ []
+
+[20]
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
 (Font)              Font shape `TU/lmtt/b/n' tried instead on input line 559.
 
-Overfull \hbox (53.49437pt too wide) in paragraph at lines 562--563
-[]\TU/SimSun(0)/m/n/12 我 们 在 [][]\TU/lmtt/m/n/12 updateJointsWorldPosition.m []
-\TU/SimSun(0)/m/n/12 中 实 现 \TU/lmr/m/n/12 PoE \TU/SimSun(0)/m/n/12 正 向 运 动 学，| 
- 替 换 原 有 的 [][]\TU/lmtt/m/n/12 getTransform()
+
+
+Overfull \hbox (8.70815pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 3 TASK 3: FORWARD KINEMATICS IMPLEMENTATION USING POE FORMULA \
+TU/lmr/m/n/12 21
+ []
+
+[21]
+
+
+Overfull \hbox (8.70815pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 3 TASK 3: FORWARD KINEMATICS IMPLEMENTATION USING POE FORMULA \
+TU/lmr/m/n/12 22
+ []
+
+[22]
+Overfull \hbox (8.79175pt too wide) in paragraph at lines 660--661
+[]\TU/lmr/bx/n/12 Solution\TU/lmr/m/n/12 : Cache the number of spheres for each
+ link segment in [][]\TU/lmtt/m/n/12 stompRobotSphere.m
  []
 
 
 
-[18]
 
-[19]
-
-[20]
-
-[21]
-
-[22]
-File: Figures/Task4/Task4_scenario_1.png Graphic file (type bmp)
-<Figures/Task4/Task4_scenario_1.png>
-File: Figures/Task4/Task4_scenario_2.png Graphic file (type bmp)
-<Figures/Task4/Task4_scenario_2.png>
-
+Overfull \hbox (8.70815pt too wide) has occurred while \output is active
+\TU/lmr/m/sl/12 3 TASK 3: FORWARD KINEMATICS IMPLEMENTATION USING POE FORMULA \
+TU/lmr/m/n/12 23
+ []
 
 [23]
 
 [24]
-File: Figures/Task4/Task4_scenario_3.png Graphic file (type bmp)
-<Figures/Task4/Task4_scenario_3.png>
-File: Figures/Task4/Task4_scenario_4.png Graphic file (type bmp)
-<Figures/Task4/Task4_scenario_4.png>
-
 
 [25]
+Overfull \hbox (13.02664pt too wide) in paragraph at lines 770--771
+[]\TU/lmr/bx/n/12 Obstacles\TU/lmr/m/n/12 : Two slanted walls (rotation angles 
+$\OML/cmm/m/it/12 ^^K \OT1/cmr/m/n/12 = 25[]$ \TU/lmr/m/n/12 and $\OMS/cmsy/m/n
+/12 ^^@\OT1/cmr/m/n/12 20[]$\TU/lmr/m/n/12 ), size $\OT1/cmr/m/n/12 [0\OML/cmm/
+m/it/12 :\OT1/cmr/m/n/12 35\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 0\OML/cmm/m/it/12
+ :\OT1/cmr/m/n/12 04\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 0\OML/cmm/m/it/12 :\OT1/
+cmr/m/n/12 25]$
+ []
+
+File: Figures/Task4/Task4_scenario_1.png Graphic file (type bmp)
+<Figures/Task4/Task4_scenario_1.png>
+
 
 [26]
+File: Figures/Task4/Task4_scenario_2.png Graphic file (type bmp)
+<Figures/Task4/Task4_scenario_2.png>
+File: Figures/Task4/Task4_scenario_3.png Graphic file (type bmp)
+<Figures/Task4/Task4_scenario_3.png>
+
 
 [27]
 
 [28]
+File: Figures/Task4/Task4_scenario_4.png Graphic file (type bmp)
+<Figures/Task4/Task4_scenario_4.png>
+
 
 [29]
 
 [30]
-File: Figures/Task5/Pathdifferences.jpg Graphic file (type bmp)
-<Figures/Task5/Pathdifferences.jpg>
-
 
 [31]
 
 [32]
 
 [33]
+Overfull \hbox (3.11572pt too wide) in paragraph at lines 994--995
+[]\TU/lmr/m/n/12 Orientation constraint weight: $\OT1/cmr/m/n/12 300 \OMS/cmsy/
+m/n/12 ^^@ \OT1/cmr/m/n/12 900$ \TU/lmr/m/n/12 (adjustable, according to constr
+aint strength
+ []
+
+
 
 [34]
+File: Figures/Task5/Pathdifferences.jpg Graphic file (type bmp)
+<Figures/Task5/Pathdifferences.jpg>
+
 
 [35]
 
-[36] (Report.aux)
+[36]
+
+[37]
+
+[38]
+
+[39]
+
+[40] (Report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: AEDC68596286DBA22A9CCDE7E581B40C;14853.
+(rerunfilecheck)             Checksum: BF1B6AB579D5D390BC9B09429C1654D1;24809.
  ) 
 Here is how much of TeX's memory you used:
- 20264 strings out of 405075
- 426933 string characters out of 5504329
- 1104747 words of memory out of 5000000
- 46607 multiletter control sequences out of 15000+600000
- 636631 words of font info for 122 fonts, out of 8000000 for 9000
+ 19917 strings out of 405075
+ 406060 string characters out of 5504329
+ 1091747 words of memory out of 5000000
+ 46264 multiletter control sequences out of 15000+600000
+ 636599 words of font info for 118 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 93i,10n,111p,749b,1781s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 93i,10n,111p,1669b,1777s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Report.pdf (36 pages).
+Output written on Report.pdf (40 pages).

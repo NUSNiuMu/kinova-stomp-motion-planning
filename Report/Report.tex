@@ -1,7 +1,7 @@
 % !TEX program = xelatex
 \documentclass[12pt,a4paper]{ctexart}
 
-% 基本宏包
+% Basic packages
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -22,7 +22,7 @@
 
 \graphicspath{{Figures/}}
 
-% 代码高亮（主要用于 MATLAB 片段）
+% Code highlighting (mainly for MATLAB snippets)
 \lstdefinestyle{mystyle}{
   language=Matlab,
   basicstyle=\ttfamily\small,
@@ -38,8 +38,8 @@
 }
 \lstset{style=mystyle}
 
-% 封面信息（按 README 与课程信息）
-\title{\textbf{EE5112 人机交互 — Project 2\\基于 STOMP 的 Kinova 机械臂轨迹规划}}
+% Cover information (according to README and course information)
+\title{\textbf{EE5112 Human-Robot Interaction — Project 2\\STOMP-based Trajectory Planning for Kinova Manipulator}}
 \author{\textbf{Team Members:}~Wu Zining\quad Niu Mu\quad Zhao Jinqiu}
 \date{AY 2025/2026\\National University of Singapore}
 
@@ -56,159 +56,159 @@
 \vspace{8pt}
 
 \begin{abstract}
-本文围绕 EE5112 Project 2 要求，完成对基于 STOMP (Stochastic Trajectory Optimization for Motion Planning) 的轨迹规划实现与评估。报告重点详述：\textbf{Task 1} — 补全示例代码、在原始障碍设置下实现 Kinova Gen3 机械臂的无碰撞路径规划与可视化；\textbf{Task 2} — 在 8 种不同机器人平台上验证 STOMP 算法的通用性，包括 ABB IRB120、Franka Panda、Kuka IIWA、UR 系列等，规划成功率 100\%，证明了算法的平台无关性；\textbf{Task 3} — 基于指数积 (Product of Exponentials, PoE) 公式实现正向运动学以替代内置 \verb|getTransform()|，并与 STOMP 流水线衔接；\textbf{Task 4} — 设计四种自定义避障场景，实现定向盒子体素化算法，成功规划复杂障碍环境下的无碰撞轨迹；\textbf{Task 5} — 实现末端执行器姿态约束，通过软约束方法在代价函数中添加姿态惩罚项，姿态对齐精度提升显著。我们给出算法原理、实现要点、关键参数、实验设置与结果分析，并附参考文献以支撑方法选择与实现细节。
+This report addresses the requirements of EE5112 Project 2, completing the implementation and evaluation of trajectory planning based on STOMP (Stochastic Trajectory Optimization for Motion Planning). The report details: \textbf{Task 1} — Completing the example code and implementing collision-free path planning and visualization for the Kinova Gen3 manipulator under the original obstacle configuration; \textbf{Task 2} — Validating the universality of the STOMP algorithm on 8 different robot platforms, including ABB IRB120, Franka Panda, Kuka IIWA, UR series, etc., achieving 100\% planning success rate, demonstrating the platform independence of the algorithm; \textbf{Task 3} — Implementing forward kinematics based on the Product of Exponentials (PoE) formula to replace the built-in \verb|getTransform()| function and integrating it with the STOMP pipeline; \textbf{Task 4} — Designing four custom obstacle avoidance scenarios, implementing an oriented box voxelization algorithm, and successfully planning collision-free trajectories in complex obstacle environments; \textbf{Task 5} — Implementing end-effector orientation constraints by adding orientation penalty terms to the cost function through a soft constraint method, significantly improving orientation alignment accuracy. We present the algorithm principles, implementation details, key parameters, experimental setup and result analysis, along with references to support method selection and implementation details.
 \end{abstract}
 
-\textbf{关键词：}STOMP，运动规划，PoE，正向运动学，Kinova Gen3，避障
+\textbf{Keywords:} STOMP, motion planning, PoE, forward kinematics, Kinova Gen3, obstacle avoidance
 
 \tableofcontents
 
-\section{任务一：基于 STOMP 的 Kinova 机械臂无碰撞路径规划}
+\section[Task 1: STOMP-based Collision-Free Path Planning]{Task 1: STOMP-based Collision-Free Path Planning for Kinova Manipulator}
 
-\subsection{任务目标与待补全模块}
-本任务要求完善给定的不完整示例代码，使 MATLAB Live Script \verb|KINOVA_STOMP_Path_Planning.mlx| 能够在原始障碍场景下，为 Kinova Gen3 机械臂规划一条从初始配置到目标末端姿态的\textbf{无碰撞、平滑}轨迹，并生成可视化动画。项目明确指出需要补全以下五个核心函数模块：
+\subsection{Task Objectives and Modules to Complete}
+This task requires completing the given incomplete example code so that the MATLAB Live Script \verb|KINOVA_STOMP_Path_Planning.mlx| can plan a \textbf{collision-free and smooth} trajectory from the initial configuration to the target end-effector pose for the Kinova Gen3 manipulator under the original obstacle scenario, and generate visualization animations. The project explicitly requires completing the following five core function modules:
 
 \begin{itemize}
-  \item \verb|helperSTOMP.m| — STOMP 主循环与迭代控制
-  \item \verb|updateJointsWorldPosition.m| — 正向运动学计算（Task 3 用 PoE 替换）
-  \item \verb|stompDTheta.m| — 梯度估计（加权噪声求和）
-  \item \verb|stompSamples.m| — 轨迹采样（多元高斯扰动生成）
-  \item \verb|stompObstacleCost.m| — 障碍代价计算（基于符号距离场）
+  \item \verb|helperSTOMP.m| — STOMP main loop and iteration control
+  \item \verb|updateJointsWorldPosition.m| — Forward kinematics computation (replaced with PoE in Task 3)
+  \item \verb|stompDTheta.m| — Gradient estimation (weighted noise summation)
+  \item \verb|stompSamples.m| — Trajectory sampling (multivariate Gaussian perturbation generation)
+  \item \verb|stompObstacleCost.m| — Obstacle cost computation (based on signed distance field)
 \end{itemize}
 
-\subsection{STOMP 算法原理}
+\subsection{STOMP Algorithm Principles}
 
-STOMP（Stochastic Trajectory Optimization for Motion Planning）\cite{Kalakrishnan2011STOMP} 是一种基于随机采样的轨迹优化方法，其核心思想是：在给定初始轨迹的基础上，通过\textbf{加噪声采样}、\textbf{代价评估}、\textbf{加权更新}三个步骤迭代优化轨迹，无需显式计算梯度，因此对非光滑、不可导的代价函数（如碰撞惩罚）具有良好的鲁棒性。
+STOMP (Stochastic Trajectory Optimization for Motion Planning) is a trajectory optimization method based on stochastic sampling. Its core idea is: given an initial trajectory, iteratively optimize the trajectory through three steps: \textbf{noise-added sampling}, \textbf{cost evaluation}, and \textbf{weighted update}, without explicitly computing gradients. Therefore, it has good robustness for non-smooth and non-differentiable cost functions (such as collision penalties).
 
-\subsubsection{算法流程}
+\subsubsection{Algorithm Flow}
 
-设轨迹由 $T$ 个离散时间步的关节配置 $\{\theta_t\}_{t=1}^T$ 描述（$\theta_t \in \mathbb{R}^n$），其中 $\theta_1$ 和 $\theta_T$ 为固定的起点与终点。算法迭代过程如下：
+Let the trajectory be described by $T$ discrete time steps of joint configurations $\{\theta_t\}_{t=1}^T$ ($\theta_t \in \mathbb{R}^n$), where $\theta_1$ and $\theta_T$ are fixed start and end points. The iterative process of the algorithm is as follows:
 
-\paragraph{Step 1：采样}
-对每个内部时间步 $t \in \{2,\dots,T-1\}$，生成 $K$ 条带噪声的采样轨迹：
+\paragraph{Step 1: Sampling}
+For each internal time step $t \in \{2,\dots,T-1\}$, generate $K$ noisy sampled trajectories:
 \[
 \tilde{\theta}_t^{(k)} = \theta_t + \varepsilon_t^{(k)}, \quad \varepsilon_t^{(k)} \sim \mathcal{N}(0, \Sigma),\; k=1,\dots,K
 \]
-其中协方差矩阵 $\Sigma$ 通常取为平滑矩阵 $R$ 的逆（归一化后），以鼓励轨迹在时间上的连续性。
+where the covariance matrix $\Sigma$ is typically taken as the inverse of the smoothness matrix $R$ (after normalization) to encourage temporal continuity of the trajectory.
 
-\paragraph{Step 2：代价评估}
-对每条采样轨迹 $k$，计算其总代价：
+\paragraph{Step 2: Cost Evaluation}
+For each sampled trajectory $k$, compute its total cost:
 \[
 C^{(k)} = \sum_{t=1}^T c(\tilde{\theta}_t^{(k)}) + \frac{1}{2}\tilde{\theta}^{(k)\top} R \tilde{\theta}^{(k)}
 \]
-其中 $c(\theta_t)$ 为障碍代价，$R$ 为二阶差分平滑矩阵。
+where $c(\theta_t)$ is the obstacle cost and $R$ is the second-order difference smoothness matrix.
 
-\paragraph{Step 3：概率加权}
-将代价转换为概率权重（采用 Boltzmann 分布）：
+\paragraph{Step 3: Probabilistic Weighting}
+Convert the cost to probability weights (using Boltzmann distribution):
 \[
 w^{(k)} = \frac{\exp(-\eta^{-1} C^{(k)})}{\sum_{j=1}^K \exp(-\eta^{-1} C^{(j)})}
 \]
-其中 $\eta$ 为温度参数，控制代价对概率的敏感度。
+where $\eta$ is the temperature parameter that controls the sensitivity of probability to cost.
 
-\paragraph{Step 4：梯度估计与更新}
-计算加权噪声的期望作为更新方向：
+\paragraph{Step 4: Gradient Estimation and Update}
+Compute the expectation of weighted noise as the update direction:
 \[
 \Delta\theta_t = \sum_{k=1}^K w^{(k)} \varepsilon_t^{(k)}
 \]
-应用平滑后的更新：
+Apply the smoothed update:
 \[
 \theta_t \leftarrow \theta_t + M \Delta\theta_t
 \]
-其中 $M$ 为平滑矩阵，通常由 $R$ 的逆归一化得到。
+where $M$ is the smoothness matrix, typically obtained by normalizing the inverse of $R$.
 
-\subsection{代价函数设计}
+\subsection{Cost Function Design}
 
-我们的代价函数由三部分组成：
+Our cost function consists of three parts:
 
-\subsubsection{障碍代价 $c_{\text{obs}}$}
-采用基于\textbf{符号欧氏距离场}（Signed Euclidean Distance Transform, sEDT）的障碍代价函数\cite{Khatib1986Potential}。对机器人每一连杆用一系列球体近似（球心由 \verb|stompRobotSphere.m| 生成），计算每个球心到最近障碍的距离 $d_i$。
+\subsubsection{Obstacle Cost \texorpdfstring{$c_{\text{obs}}$}{c obs}}
+We adopt an obstacle cost function based on the \textbf{Signed Euclidean Distance Transform} (sEDT). Each link of the robot is approximated by a series of spheres (sphere centers generated by \verb|stompRobotSphere.m|), and the distance $d_i$ from each sphere center to the nearest obstacle is computed.
 
-实现中提供了两种代价函数形式：
+Two forms of cost functions are provided in the implementation:
 
-\paragraph{指数型代价函数}
+\paragraph{Exponential Cost Function}
 \[
 c_{\text{obs}}^{\text{exp}} = \sum_{i} \max\left(0, \exp\left(\alpha(\delta_i)^2\right) - 1\right), \quad \delta_i = d_{\text{safe}} - d_i
 \]
-其中 $d_{\text{safe}}=0.05$m 为安全裕度，$\alpha=100$ 为惩罚强度。仅当 $d_i < d_{\text{safe}}$ 时施加惩罚。
+where $d_{\text{safe}}=0.05$m is the safety margin and $\alpha=100$ is the penalty strength. Penalty is applied only when $d_i < d_{\text{safe}}$.
 
-\paragraph{线性型代价函数（带速度权重）}
-当前实现采用线性型代价函数，结合速度权重以考虑运动过程中的碰撞风险：
+\paragraph{Linear Cost Function (with Velocity Weight)}
+The current implementation uses a linear cost function combined with velocity weights to consider collision risk during motion:
 \[
 c_{\text{obs}}^{\text{linear}} = w \sum_{i} \phi_i^2 \cdot v_i, \quad \phi_i = \max(0, d_{\text{safe}} - d_i)
 \]
-其中 $v_i$ 为第 $i$ 个碰撞球的速度（通过有限差分计算），$w=10000$ 为权重系数。该形式在安全带内对速度进行二次惩罚，鼓励机器人在接近障碍物时减速，提升安全性。
+where $v_i$ is the velocity of the $i$-th collision sphere (computed via finite differences) and $w=10000$ is the weight coefficient. This form applies quadratic penalty on velocity within the safety zone, encouraging the robot to decelerate when approaching obstacles, thereby improving safety.
 
-\subsubsection{平滑代价 $c_{\text{smooth}}$}
-采用二阶有限差分矩阵 $R$ 惩罚加速度：
+\subsubsection{Smoothness Cost $c_{\text{smooth}}$}
+We use a second-order finite difference matrix $R$ to penalize acceleration:
 \[
 c_{\text{smooth}} = \frac{1}{2}\theta^{\top} R \theta, \quad R = A^{\top}A
 \]
-其中 $A$ 为离散二阶差分算子。该项确保轨迹在关节空间的平滑性，避免抖动。
+where $A$ is the discrete second-order difference operator. This term ensures smoothness of the trajectory in joint space and avoids jitter.
 
-\subsubsection{约束代价 $c_{\text{constraint}}$}
-预留接口用于添加末端姿态约束（Task 5）。当前实现中设为零：
+\subsubsection{Constraint Cost $c_{\text{constraint}}$}
+A reserved interface for adding end-effector orientation constraints (Task 5). In the current implementation, it is set to zero:
 \[
 c_{\text{constraint}}(t) = 0
 \]
 
-\subsection{关键实现模块}
+\subsection{Key Implementation Modules}
 
-\subsubsection{\texttt{helperSTOMP.m} — 主循环}
-实现完整的 STOMP 迭代流程，包括：
+\subsubsection{\texttt{helperSTOMP.m} — Main Loop}
+Implements the complete STOMP iterative process, including:
 \begin{itemize}
-  \item 轨迹初始化（线性插值）
-  \item 平滑矩阵预计算（$R$、$R^{-1}$、$M$）
-  \item 收敛判定（代价变化小于阈值或达到最大迭代次数 50）
-  \item 碰撞检测（使用 MATLAB \verb|checkCollision|）
-  \item 动画生成（可选开关 \verb|enableVideo| 与 \verb|enableVideoTraining|）
+  \item Trajectory initialization (linear interpolation)
+  \item Smoothness matrix precomputation ($R$, $R^{-1}$, $M$)
+  \item Convergence criterion (cost change less than threshold or reaching maximum iterations of 50)
+  \item Collision detection (using MATLAB \verb|checkCollision|)
+  \item Animation generation (optional switches \verb|enableVideo| and \verb|enableVideoTraining|)
 \end{itemize}
 
-关键参数设置：
+Key parameter settings:
 \begin{itemize}
-  \item \verb|nDiscretize = 20| — 轨迹离散化点数
-  \item \verb|nPaths = 20| — 每次迭代的采样数
-  \item \verb|convergenceThreshold = 0.1| — 收敛阈值
-  \item \verb|eta = 10| — Boltzmann 温度参数
+  \item \verb|nDiscretize = 20| — Number of trajectory discretization points
+  \item \verb|nPaths = 20| — Number of samples per iteration
+  \item \verb|convergenceThreshold = 0.1| — Convergence threshold
+  \item \verb|eta = 10| — Boltzmann temperature parameter
 \end{itemize}
 
-\subsubsection{\texttt{stompSamples.m} — 采样生成}
-为每个关节独立生成高斯噪声，使用 Cholesky 分解采样：
+\subsubsection{\texttt{stompSamples.m} — Sample Generation}
+Generates Gaussian noise independently for each joint using Cholesky decomposition:
 \begin{lstlisting}
 A = chol(sigma, 'lower');
 Z = randn(nDiscretize-2, nSamplePaths);
 em_m = (A * Z)' + mu;  % (nPaths x innerN)
 \end{lstlisting}
-起点与终点不施加噪声（保持固定），仅对内部点 $t \in \{2,\dots,T-1\}$ 采样。
+Start and end points are not perturbed with noise (kept fixed), only internal points $t \in \{2,\dots,T-1\}$ are sampled.
 
-\subsubsection{\texttt{stompDTheta.m} — 梯度估计}
-实现概率加权的噪声求和：
+\subsubsection{\texttt{stompDTheta.m} — Gradient Estimation}
+Implements probabilistically weighted noise summation:
 \begin{lstlisting}
 dtheta = zeros(nJoints, nDiscretize_movable);
 for m = 1:nJoints
     em_m = em{m};  % (nPaths x innerN)
-    weighted_noise = trajProb .* em_m;  % Hadamard 积
-    dtheta(m, :) = sum(weighted_noise, 1);  % 按列求和
+    weighted_noise = trajProb .* em_m;  % Hadamard product
+    dtheta(m, :) = sum(weighted_noise, 1);  % Sum by column
 end
 \end{lstlisting}
 
-\subsubsection{\texttt{stompObstacleCost.m} — 障碍代价}
-关键实现细节：
+\subsubsection{\texttt{stompObstacleCost.m} — Obstacle Cost}
+Key implementation details:
 \begin{itemize}
-  \item 将球心坐标映射到体素网格索引（使用边界检查避免越界）
-  \item 从 sEDT 提取符号距离 $s_i$
-  \item 计算有效距离 $d_i = s_i - r_{\text{ball}}$
-  \item 实现两种代价函数形式：
+  \item Map sphere center coordinates to voxel grid indices (using boundary checks to avoid out-of-bounds)
+  \item Extract signed distance $s_i$ from sEDT
+  \item Compute effective distance $d_i = s_i - r_{\text{ball}}$
+  \item Implement two forms of cost functions:
     \begin{itemize}
-      \item \textbf{指数型}：$c_{\text{exp}} = \sum \max(0, \exp(\alpha \delta_i^2) - 1)$，$\alpha=100$
-      \item \textbf{线性型（当前使用）}：$c_{\text{linear}} = w \sum \phi_i^2 \cdot v_i$，结合速度权重 $v_i$，$w=10000$
+      \item \textbf{Exponential}: $c_{\text{exp}} = \sum \max(0, \exp(\alpha \delta_i^2) - 1)$, $\alpha=100$
+      \item \textbf{Linear (currently used)}: $c_{\text{linear}} = w \sum \phi_i^2 \cdot v_i$, combined with velocity weight $v_i$, $w=10000$
     \end{itemize}
-  \item 使用 try-catch 结构处理边界情况，确保数值稳定性
+  \item Use try-catch structure to handle boundary cases, ensuring numerical stability
 \end{itemize}
 
-\subsubsection{\texttt{stompRobotSphere.m} — 碰撞球生成}
-\textbf{关键优化：固定球数策略}
+\subsubsection{\texttt{stompRobotSphere.m} — Collision Sphere Generation}
+\textbf{Key Optimization: Fixed Sphere Count Strategy}
 
-为避免相邻时间步球数不一致导致的维度不匹配错误，采用 \verb|persistent| 变量缓存每段连杆的球数量，确保整个规划过程中球总数恒定：
+To avoid dimension mismatch errors caused by inconsistent sphere counts between adjacent time steps, we use \verb|persistent| variables to cache the number of spheres for each link segment, ensuring a constant total number of spheres throughout the planning process:
 \begin{lstlisting}
 persistent cachedCounts
 if isempty(cachedCounts)
@@ -219,140 +219,140 @@ if isempty(cachedCounts)
 end
 \end{lstlisting}
 
-\subsection{实验设置与结果}
+\subsection{Experimental Setup and Results}
 
-\subsubsection{实验环境}
+\subsubsection{Experimental Environment}
 \begin{itemize}
-  \item 机器人：Kinova Gen3（7-DOF 机械臂）
-  \item 工具箱：MATLAB Robotics System Toolbox
-  \item 障碍物：由 \verb|helperCreateObstaclesKINOVA.m| 生成的 3D 体素环境
-  \item 初末姿态：由逆运动学求解得到（\verb|taskInit|、\verb|taskFinal|）
+  \item Robot: Kinova Gen3 (7-DOF manipulator)
+  \item Toolbox: MATLAB Robotics System Toolbox
+  \item Obstacles: 3D voxel environment generated by \verb|helperCreateObstaclesKINOVA.m|
+  \item Initial and final poses: Obtained via inverse kinematics (\verb|taskInit|, \verb|taskFinal|)
 \end{itemize}
 
-\subsubsection{性能指标}
+\subsubsection{Performance Metrics}
 \begin{itemize}
-  \item \textbf{碰撞检测}：使用 \verb|checkCollision| 验证最终轨迹无碰撞
-  \item \textbf{代价收敛}：记录每轮迭代的总代价 $Q(\theta)$
-  \item \textbf{平滑度}：计算控制代价 $\text{RAR} = \frac{1}{2}\theta^{\top}R\theta$
-  \item \textbf{计算时间}：使用 \verb|tic/toc| 记录每次迭代耗时
+  \item \textbf{Collision detection}: Use \verb|checkCollision| to verify the final trajectory is collision-free
+  \item \textbf{Cost convergence}: Record the total cost $Q(\theta)$ for each iteration
+  \item \textbf{Smoothness}: Compute control cost $\text{RAR} = \frac{1}{2}\theta^{\top}R\theta$
+  \item \textbf{Computation time}: Use \verb|tic/toc| to record the time per iteration
 \end{itemize}
 
-\subsubsection{典型结果}
-在默认参数设置下（\verb|nDiscretize=20|，\verb|nPaths=20|）：
+\subsubsection{Typical Results}
+Under default parameter settings (\verb|nDiscretize=20|, \verb|nPaths=20|):
 \begin{itemize}
-  \item 算法在 \textbf{10-30 次迭代}内收敛（代价变化 $< 0.1$）
-  \item 最终轨迹通过碰撞检测（\verb|isTrajectoryInCollision = false|）
-  \item 障碍代价随迭代单调下降并趋近于零
-  \item 平滑代价保持在合理范围，无明显关节抖动
-  \item 单次迭代平均耗时约 \textbf{1-3 秒}（取决于硬件）
+  \item The algorithm converges within \textbf{10-30 iterations} (cost change $< 0.1$)
+  \item The final trajectory passes collision detection (\verb|isTrajectoryInCollision = false|)
+  \item Obstacle cost monotonically decreases with iterations and approaches zero
+  \item Smoothness cost remains within a reasonable range with no obvious joint jitter
+  \item Average time per iteration is approximately \textbf{1-3 seconds} (depending on hardware)
 \end{itemize}
 
-\subsection{讨论与改进}
+\subsection{Discussion and Improvements}
 
-\subsubsection{算法特性分析}
+\subsubsection{Algorithm Characteristics Analysis}
 \begin{itemize}
-  \item \textbf{优点}：无需梯度信息，适用于非光滑代价；并行化潜力大（$K$ 条轨迹可独立评估）；对初始化鲁棒。
-  \item \textbf{局限}：对温度参数 $\eta$ 敏感；采样数 $K$ 较大时计算开销显著；可能陷入局部最优。
+  \item \textbf{Advantages}: No gradient information required, suitable for non-smooth costs; high parallelization potential ($K$ trajectories can be evaluated independently); robust to initialization.
+  \item \textbf{Limitations}: Sensitive to temperature parameter $\eta$; significant computational overhead when sample number $K$ is large; may get stuck in local optima.
 \end{itemize}
 
-\subsubsection{参数调优经验}
+\subsubsection{Parameter Tuning Experience}
 \begin{itemize}
-  \item 增大 \verb|nPaths| 可提高收敛稳定性，但需权衡计算时间
-  \item 温度参数 \verb|eta=10| 在大多数场景表现良好；过小会使更新过于激进
-  \item 安全裕度 $d_{\text{safe}}=0.05$m 需根据机器人尺寸与障碍密度调整
-  \item 线性型代价函数的权重 $w$ 影响速度惩罚强度，可根据场景动态调整
+  \item Increasing \verb|nPaths| can improve convergence stability, but requires balancing computation time
+  \item Temperature parameter \verb|eta=10| performs well in most scenarios; too small values make updates too aggressive
+  \item Safety margin $d_{\text{safe}}=0.05$m needs to be adjusted according to robot size and obstacle density
+  \item The weight $w$ of the linear cost function affects velocity penalty strength and can be dynamically adjusted according to scenarios
 \end{itemize}
 
-\subsubsection{潜在改进方向}
+\subsubsection{Potential Improvement Directions}
 \begin{itemize}
-  \item 采用\textbf{自适应温度}策略（迭代初期高温度鼓励探索，后期低温度精细收敛）
-  \item 结合\textbf{多分辨率采样}（粗到细）加速收敛
-  \item 集成\textbf{快速碰撞检测库}（如 FCL）替代 MATLAB 内置函数
+  \item Adopt \textbf{adaptive temperature} strategy (high temperature in early iterations to encourage exploration, low temperature in later iterations for fine convergence)
+  \item Combine \textbf{multi-resolution sampling} (coarse to fine) to accelerate convergence
+  \item Integrate \textbf{fast collision detection libraries} (such as FCL) to replace MATLAB built-in functions
 \end{itemize}
 
-\section{任务二：多机器人平台 STOMP 算法验证}
+\section{Task 2: STOMP Algorithm Validation on Multiple Robot Platforms}
 
-\subsection{任务要求}
-Task 2 要求选择一个\textbf{不同的机器人机械臂}，在类似于 Task 1 的场景中为其规划路径。该任务旨在验证 STOMP 算法的\textbf{通用性}和\textbf{可移植性}，展示算法在不同机器人平台上的适用性。为全面评估算法性能，我们选择了\textbf{8 种不同类型的工业机械臂}进行测试。
+\subsection{Task Requirements}
+Task 2 requires selecting a \textbf{different robot manipulator} and planning a path for it in a scenario similar to Task 1. This task aims to validate the \textbf{universality} and \textbf{portability} of the STOMP algorithm, demonstrating its applicability across different robot platforms. To comprehensively evaluate algorithm performance, we selected \textbf{8 different types of industrial manipulators} for testing.
 
-\subsection{测试机器人平台选择}
+\subsection{Robot Platform Selection for Testing}
 
-\subsubsection{机器人列表}
-我们选择了以下 8 种机器人平台，涵盖不同的自由度、工作空间和制造商：
+\subsubsection{Robot List}
+We selected the following 8 robot platforms, covering different degrees of freedom, workspaces, and manufacturers:
 
 \begin{enumerate}
-  \item \textbf{ABB IRB120} — 6-DOF 小型工业机械臂，紧凑型设计
-  \item \textbf{Franka Emika Panda} — 7-DOF 协作机器人，高精度力控
-  \item \textbf{Kinova Gen3} — 7-DOF 轻量级机械臂（原始测试平台）
-  \item \textbf{Kuka IIWA 7} — 7-DOF 轻型机器人，柔顺控制
-  \item \textbf{Rethink Sawyer} — 7-DOF 协作机器人，单臂设计
-  \item \textbf{Universal Robots UR10} — 6-DOF 中型协作机器人
-  \item \textbf{Universal Robots UR3} — 6-DOF 小型协作机器人
-  \item \textbf{Universal Robots UR5} — 6-DOF 标准协作机器人
+  \item \textbf{ABB IRB120} — 6-DOF small industrial manipulator with compact design
+  \item \textbf{Franka Emika Panda} — 7-DOF collaborative robot with high-precision force control
+  \item \textbf{Kinova Gen3} — 7-DOF lightweight manipulator (original test platform)
+  \item \textbf{Kuka IIWA 7} — 7-DOF lightweight robot with compliant control
+  \item \textbf{Rethink Sawyer} — 7-DOF collaborative robot with single-arm design
+  \item \textbf{Universal Robots UR10} — 6-DOF medium collaborative robot
+  \item \textbf{Universal Robots UR3} — 6-DOF small collaborative robot
+  \item \textbf{Universal Robots UR5} — 6-DOF standard collaborative robot
 \end{enumerate}
 
-\subsubsection{选择依据}
+\subsubsection{Selection Criteria}
 \begin{itemize}
-  \item \textbf{多样性}：涵盖 6-DOF 和 7-DOF 机器人，验证算法对不同自由度的适应性
-  \item \textbf{代表性}：选择主流工业机器人和协作机器人，具有实际应用价值
-  \item \textbf{可获取性}：所有机器人模型均可在 MATLAB Robotics System Toolbox 中通过 \verb|loadrobot()| 函数直接加载
+  \item \textbf{Diversity}: Covering 6-DOF and 7-DOF robots to validate algorithm adaptability to different degrees of freedom
+  \item \textbf{Representativeness}: Selecting mainstream industrial and collaborative robots with practical application value
+  \item \textbf{Availability}: All robot models can be directly loaded in MATLAB Robotics System Toolbox via the \verb|loadrobot()| function
 \end{itemize}
 
-\subsection{实现方法}
+\subsection{Implementation Method}
 
-\subsubsection{机器人模型加载}
-使用 MATLAB \verb|loadrobot()| 函数加载机器人模型，统一数据格式为列向量：
+\subsubsection{Robot Model Loading}
+Use MATLAB \verb|loadrobot()| function to load robot models, with unified data format as column vectors:
 \begin{lstlisting}
 robot = loadrobot('robotName', 'DataFormat', 'column');
 \end{lstlisting}
 
-支持的机器人名称包括：\verb|'abbIrb120'|、\verb|'frankaEmikaPanda'|、\verb|'kinovaGen3'|、\verb|'kukaIiwa7'|、\verb|'rethinkSawyer'|、\verb|'universalUR10'|、\verb|'universalUR3'|、\verb|'universalUR5'|。
+Supported robot names include: \verb|'abbIrb120'|, \verb|'frankaEmikaPanda'|, \verb|'kinovaGen3'|, \verb|'kukaIiwa7'|, \verb|'rethinkSawyer'|, \verb|'universalUR10'|, \verb|'universalUR3'|, \verb|'universalUR5'|.
 
-\subsubsection{参数自适应调整}
-不同机器人的工作空间和关节范围差异较大，需要对以下参数进行自适应调整：
+\subsubsection{Adaptive Parameter Adjustment}
+Different robots have significantly different workspaces and joint ranges, requiring adaptive adjustment of the following parameters:
 
-\paragraph{工作空间适配}
+\paragraph{Workspace Adaptation}
 \begin{itemize}
-  \item \textbf{障碍物位置}：根据机器人最大伸展范围（reach）调整障碍物位置，确保场景具有挑战性
-  \item \textbf{目标位置}：使用逆运动学（IK）验证目标位置可达性，必要时微调
+  \item \textbf{Obstacle positions}: Adjust obstacle positions according to the robot's maximum reach, ensuring the scenario is challenging
+  \item \textbf{Target position}: Use inverse kinematics (IK) to verify target position reachability, fine-tuning if necessary
 \end{itemize}
 
-\paragraph{STOMP 参数调整}
+\paragraph{STOMP Parameter Adjustment}
 \begin{itemize}
-  \item \textbf{轨迹离散化点数}：根据机器人自由度调整 \verb|nDiscretize|（6-DOF 用 20，7-DOF 用 25）
-  \item \textbf{采样数}：保持 \verb|nPaths = 20|，确保算法稳定性
-  \item \textbf{碰撞球半径}：根据机器人连杆尺寸调整 \verb|sphere_radius|（范围 0.03-0.06 m）
+  \item \textbf{Trajectory discretization points}: Adjust \verb|nDiscretize| according to robot degrees of freedom (20 for 6-DOF, 25 for 7-DOF)
+  \item \textbf{Number of samples}: Keep \verb|nPaths = 20| to ensure algorithm stability
+  \item \textbf{Collision sphere radius}: Adjust \verb|sphere_radius| according to robot link dimensions (range 0.03-0.06 m)
 \end{itemize}
 
-\subsubsection{关节配置处理}
+\subsubsection{Joint Configuration Processing}
 \begin{itemize}
-  \item \textbf{固定关节识别}：某些机器人（如 UR 系列）起始链接为固定关节，需确保规划的关节角对应实际可动关节
-  \item \textbf{关节限位检查}：验证初始和目标配置是否在关节限位范围内
-  \item \textbf{逆运动学求解}：使用 \verb|inverseKinematics| 求解器获取初始和目标关节配置，确保末端姿态可达
+  \item \textbf{Fixed joint identification}: Some robots (such as UR series) have fixed joints at the base link, requiring ensuring that planned joint angles correspond to actual movable joints
+  \item \textbf{Joint limit checking}: Verify that initial and target configurations are within joint limits
+  \item \textbf{Inverse kinematics solving}: Use \verb|inverseKinematics| solver to obtain initial and target joint configurations, ensuring end-effector pose reachability
 \end{itemize}
 
-\subsubsection{可视化与视频录制增强}
-为更好地展示规划过程和结果，实现了增强的可视化功能：
+\subsubsection{Visualization and Video Recording Enhancement}
+To better demonstrate the planning process and results, enhanced visualization functions are implemented:
 \begin{itemize}
-  \item \textbf{稳定场景设置}：使用固定视角和坐标轴锁定，确保视频录制过程中视角稳定
-  \item \textbf{障碍物可视化}：使用 \verb|isosurface| 从 sEDT 数据生成障碍物的等值面可视化
-  \item \textbf{目标点标注}：在场景中标注目标位置，便于观察规划结果
-  \item \textbf{视频录制功能}：支持录制训练过程动画（\verb|enableVideoTraining|）和最终规划轨迹动画（\verb|enableVideoPlanned|）
-  \item \textbf{迭代信息显示}：在视频中叠加显示当前迭代次数，便于跟踪优化过程
+  \item \textbf{Stable scene setup}: Use fixed viewpoint and axis locking to ensure stable viewpoint during video recording
+  \item \textbf{Obstacle visualization}: Use \verb|isosurface| to generate isosurface visualization of obstacles from sEDT data
+  \item \textbf{Target point annotation}: Annotate target positions in the scene for easy observation of planning results
+  \item \textbf{Video recording function}: Support recording training process animations (\verb|enableVideoTraining|) and final planned trajectory animations (\verb|enableVideoPlanned|)
+  \item \textbf{Iteration information display}: Overlay current iteration number in videos to track optimization process
 \end{itemize}
 
-\subsection{实验结果}
+\subsection{Experimental Results}
 
-\subsubsection{规划成功率}
-所有 8 种机器人平台均成功完成路径规划，规划成功率 \textbf{100\%}。算法在不同机器人上的表现如下：
+\subsubsection{Planning Success Rate}
+All 8 robot platforms successfully completed path planning with a \textbf{100\%} planning success rate. Algorithm performance on different robots is as follows:
 
 \begin{itemize}
-  \item \textbf{6-DOF 机器人}（ABB IRB120、UR 系列）：平均迭代次数 12-18 次，收敛速度较快
-  \item \textbf{7-DOF 机器人}（Kinova Gen3、Franka Panda、Kuka IIWA、Sawyer）：平均迭代次数 15-25 次，由于冗余自由度，路径选择更灵活
+  \item \textbf{6-DOF robots} (ABB IRB120, UR series): Average 12-18 iterations, faster convergence
+  \item \textbf{7-DOF robots} (Kinova Gen3, Franka Panda, Kuka IIWA, Sawyer): Average 15-25 iterations, more flexible path selection due to redundant degrees of freedom
 \end{itemize}
 
-\subsubsection{可视化结果}
-图~\ref{fig:task2_robots_1} 和图~\ref{fig:task2_robots_2} 展示了 8 种机器人在相同避障场景下的路径规划结果。所有机器人均成功规划出无碰撞、平滑的轨迹。
+\subsubsection{Visualization Results}
+Figures~\ref{fig:task2_robots_1} and~\ref{fig:task2_robots_2} show the path planning results of 8 robots under the same obstacle avoidance scenario. All robots successfully planned collision-free and smooth trajectories.
 
 \begin{figure}[htbp]
   \centering
@@ -392,7 +392,7 @@ robot = loadrobot('robotName', 'DataFormat', 'column');
     \caption{Universal Robots UR10}
   \end{subfigure}
   
-  \caption{Task 2：8 种不同机器人平台的 STOMP 路径规划结果（第一部分）。}
+  \caption{Task 2: STOMP path planning results for 8 different robot platforms (Part 1).}
   \label{fig:task2_robots_1}
 \end{figure}
 
@@ -410,560 +410,560 @@ robot = loadrobot('robotName', 'DataFormat', 'column');
     \caption{Universal Robots UR5}
   \end{subfigure}
   
-  \caption{Task 2：8 种不同机器人平台的 STOMP 路径规划结果（第二部分）。所有机器人在相同避障场景下均成功规划出无碰撞轨迹。}
+  \caption{Task 2: STOMP path planning results for 8 different robot platforms (Part 2). All robots successfully planned collision-free trajectories under the same obstacle avoidance scenario.}
   \label{fig:task2_robots_2}
 \end{figure}
 
-\subsection{算法通用性分析}
+\subsection{Algorithm Universality Analysis}
 
-\subsubsection{不同自由度的影响}
+\subsubsection{Impact of Different Degrees of Freedom}
 \begin{itemize}
-  \item \textbf{6-DOF 机器人}：由于自由度较低，路径选择相对受限，但算法仍能找到可行解。收敛速度通常更快，因为搜索空间较小。
-  \item \textbf{7-DOF 机器人}：冗余自由度提供了更多避障路径选择，算法可以利用自运动（self-motion）优化轨迹。收敛可能需要更多迭代，但最终轨迹通常更平滑。
+  \item \textbf{6-DOF robots}: Due to lower degrees of freedom, path selection is relatively limited, but the algorithm can still find feasible solutions. Convergence is usually faster because the search space is smaller.
+  \item \textbf{7-DOF robots}: Redundant degrees of freedom provide more obstacle avoidance path options, and the algorithm can utilize self-motion to optimize trajectories. Convergence may require more iterations, but the final trajectory is usually smoother.
 \end{itemize}
 
-\subsubsection{不同工作空间的影响}
+\subsubsection{Impact of Different Workspaces}
 \begin{itemize}
-  \item \textbf{小型机器人}（UR3、ABB IRB120）：工作空间较小，需要更精细的障碍物布置，目标位置选择受限。
-  \item \textbf{中型机器人}（UR5、UR10、Kinova Gen3）：工作空间适中，算法表现稳定。
-  \item \textbf{大型机器人}（Kuka IIWA、Franka Panda）：工作空间较大，可以规划更复杂的避障路径。
+  \item \textbf{Small robots} (UR3, ABB IRB120): Smaller workspace, requiring finer obstacle placement, limited target position selection.
+  \item \textbf{Medium robots} (UR5, UR10, Kinova Gen3): Moderate workspace, stable algorithm performance.
+  \item \textbf{Large robots} (Kuka IIWA, Franka Panda): Larger workspace, enabling planning of more complex obstacle avoidance paths.
 \end{itemize}
 
-\subsubsection{不同几何结构的影响}
+\subsubsection{Impact of Different Geometric Structures}
 \begin{itemize}
-  \item \textbf{紧凑型设计}（ABB IRB120）：连杆较短，碰撞检测相对简单，但工作空间受限。
-  \item \textbf{长臂设计}（UR10、Kuka IIWA）：需要更精细的碰撞球分布，但工作空间更大。
-  \item \textbf{协作机器人}（Franka Panda、Sawyer）：通常具有更灵活的关节配置，有利于复杂避障。
+  \item \textbf{Compact design} (ABB IRB120): Shorter links, relatively simple collision detection, but limited workspace.
+  \item \textbf{Long-arm design} (UR10, Kuka IIWA): Require finer collision sphere distribution, but larger workspace.
+  \item \textbf{Collaborative robots} (Franka Panda, Sawyer): Usually have more flexible joint configurations, beneficial for complex obstacle avoidance.
 \end{itemize}
 
-\subsection{关键实现要点}
+\subsection{Key Implementation Points}
 
-\subsubsection{统一接口设计}
-为支持多机器人平台，我们设计了统一的接口函数：
+\subsubsection{Unified Interface Design}
+To support multiple robot platforms, we designed a unified interface function:
 \begin{lstlisting}
 function [robot, initConfig, goalConfig] = setupRobot(robotName)
     robot = loadrobot(robotName, 'DataFormat', 'column');
-    % 根据机器人类型设置初始和目标配置
+    % Set initial and target configurations according to robot type
     [initConfig, goalConfig] = getRobotConfigs(robot, robotName);
 end
 \end{lstlisting}
 
-\subsubsection{碰撞检测适配}
-不同机器人的连杆几何差异较大，需要调整碰撞球生成策略：
+\subsubsection{Collision Detection Adaptation}
+Different robots have significantly different link geometries, requiring adjustment of collision sphere generation strategy:
 \begin{itemize}
-  \item \textbf{球半径}：根据连杆长度和直径自适应调整（范围 0.03-0.06 m）
-  \item \textbf{球数量}：长连杆使用更多碰撞球，确保检测精度
-  \item \textbf{安全裕度}：根据机器人尺寸调整 \verb|safety_margin|（范围 0.05-0.10 m）
+  \item \textbf{Sphere radius}: Adaptively adjusted according to link length and diameter (range 0.03-0.06 m)
+  \item \textbf{Number of spheres}: Long links use more collision spheres to ensure detection accuracy
+  \item \textbf{Safety margin}: Adjust \verb|safety_margin| according to robot size (range 0.05-0.10 m)
 \end{itemize}
 
-\subsubsection{Franka Emika Panda 末端执行器处理}
-Franka Emika Panda 机器人存在特殊的末端执行器定义问题，需要特别处理：
+\subsubsection{Franka Emika Panda End-Effector Handling}
+The Franka Emika Panda robot has a special end-effector definition issue that requires special handling:
 
-\paragraph{问题描述}
-Franka Emika Panda 模型的默认末端执行器是\textbf{手部框架}（\verb|panda_hand|），而非\textbf{指尖 TCP}（Tool Center Point）。如果直接使用 \verb|panda_hand| 进行逆运动学（IK）或运动规划，会导致机器人手部到达目标位置时，指尖穿透目标表面，造成碰撞问题。
+\paragraph{Problem Description}
+The default end-effector of the Franka Emika Panda model is the \textbf{hand frame} (\verb|panda_hand|), not the \textbf{fingertip TCP} (Tool Center Point). If \verb|panda_hand| is directly used for inverse kinematics (IK) or motion planning, it will cause the robot fingertip to penetrate the target surface when the hand reaches the target position, resulting in collision problems.
 
-\paragraph{解决方案}
-我们提供了两种解决方案：
+\paragraph{Solution}
+We provide two solutions:
 
-\textbf{方案 A：目标位姿偏移补偿}
-在目标位姿处进行偏移补偿，调整目标位置而非修改机器人模型：
+\textbf{Solution A: Target Pose Offset Compensation}
+Apply offset compensation at the target pose, adjusting the target position rather than modifying the robot model:
 \[
 T_{\text{goal,hand}} = \begin{bmatrix} R_{\text{goal}} & p_{\text{goal}} + R_{\text{hand}} \Delta p_{\text{local}} \\ \mathbf{0} & 1 \end{bmatrix}
 \]
-其中 $\Delta p_{\text{local}}$ 为手部局部坐标系中的小偏移量（通常向上或向外），$R_{\text{hand}}$ 为手部旋转矩阵。该方案简单直接，适用于目标位置可调整的场景。
+where $\Delta p_{\text{local}}$ is a small offset in the hand's local coordinate system (usually upward or outward) and $R_{\text{hand}}$ is the hand rotation matrix. This solution is simple and direct, suitable for scenarios where target positions can be adjusted.
 
-\textbf{方案 B：添加固定关节定义指尖 TCP}
-在机器人模型中添加一个名为 \verb|tool| 的固定刚体，通过固定变换连接到手掌框架（\verb|panda_hand|），使新的工具中心点（TCP）与指尖位置对齐，并可选择向下定向：
+\textbf{Solution B: Add Fixed Joint to Define Fingertip TCP}
+Add a fixed rigid body named \verb|tool| to the robot model, connected to the palm frame (\verb|panda_hand|) through a fixed transformation, aligning the new tool center point (TCP) with the fingertip position and optionally orienting it downward:
 \[
 {}^{\text{hand}}T_{\text{tool}} = \begin{bmatrix} R_{ht} & t_{ht} \\ \mathbf{0} & 1 \end{bmatrix}
 \]
-其中 $R_{ht}$ 和 $t_{ht}$ 分别表示工具框架相对于手部框架的旋转和平移。该方案更符合机器人学标准实践，适用于需要精确TCP定义的复杂任务。
+where $R_{ht}$ and $t_{ht}$ represent the rotation and translation of the tool frame relative to the hand frame, respectively. This solution is more in line with standard robotics practice and suitable for complex tasks requiring precise TCP definition.
 
-在实际实现中，我们根据具体场景选择合适的方案，确保 Franka Panda 能够成功规划无碰撞轨迹。
+In actual implementation, we select the appropriate solution according to specific scenarios to ensure that Franka Panda can successfully plan collision-free trajectories.
 
-\subsubsection{性能优化}
+\subsubsection{Performance Optimization}
 \begin{itemize}
-  \item \textbf{缓存机制}：螺旋轴和零位变换矩阵仅计算一次，适用于所有机器人
-  \item \textbf{并行化潜力}：STOMP 的采样评估步骤可并行化，进一步提升多机器人测试效率
+  \item \textbf{Caching mechanism}: Screw axes and home transformation matrices are computed only once, applicable to all robots
+  \item \textbf{Parallelization potential}: STOMP's sampling evaluation steps can be parallelized, further improving multi-robot testing efficiency
 \end{itemize}
 
-\subsection{总结}
+\subsection{Summary}
 
-Task 2 成功验证了 STOMP 算法在多种机器人平台上的通用性和有效性：
+Task 2 successfully validated the universality and effectiveness of the STOMP algorithm on multiple robot platforms:
 
 \begin{enumerate}
-  \item \textbf{算法通用性}：STOMP 算法成功应用于 8 种不同类型的工业机械臂，证明了算法的平台无关性
-  \item \textbf{参数适应性}：通过自适应调整工作空间、碰撞检测和安全参数，算法能够适应不同机器人的几何特性
-  \item \textbf{性能一致性}：所有机器人平台均能在合理迭代次数内收敛，规划成功率 100\%
-  \item \textbf{可扩展性}：统一的接口设计使得添加新机器人平台变得简单直接
+  \item \textbf{Algorithm universality}: The STOMP algorithm was successfully applied to 8 different types of industrial manipulators, demonstrating the platform independence of the algorithm
+  \item \textbf{Parameter adaptability}: Through adaptive adjustment of workspace, collision detection, and safety parameters, the algorithm can adapt to different robots' geometric characteristics
+  \item \textbf{Performance consistency}: All robot platforms can converge within reasonable iteration counts with 100\% planning success rate
+  \item \textbf{Scalability}: The unified interface design makes adding new robot platforms straightforward
 \end{enumerate}
 
-该实验不仅验证了 STOMP 算法的鲁棒性，也为后续任务（Task 3-5）在不同机器人平台上的应用奠定了基础。实验结果表明，STOMP 算法具有良好的通用性，适用于各种类型的机械臂运动规划任务。
+This experiment not only validated the robustness of the STOMP algorithm but also laid the foundation for subsequent tasks (Task 3-5) on different robot platforms. Experimental results show that the STOMP algorithm has good universality and is suitable for various types of manipulator motion planning tasks.
 
-\section{任务三：使用 PoE 公式实现正向运动学}
+\section{Task 3: Forward Kinematics Implementation Using PoE Formula}
 
-\subsection{任务要求}
-Task 3 要求使用\textbf{指数积（Product of Exponentials, PoE）公式}编写正向运动学程序，\textbf{替换} MATLAB 内置的 \verb|getTransform()| 函数。实现需基于扭转理论（Screw Theory），并在报告中清楚说明如何确定每个关节的螺旋轴（twist）。
+\subsection{Task Requirements}
+Task 3 requires writing a forward kinematics program using the \textbf{Product of Exponentials (PoE) formula} to \textbf{replace} MATLAB's built-in \verb|getTransform()| function. The implementation must be based on screw theory and clearly explain in the report how to determine the screw axis (twist) for each joint.
 
-\subsection{PoE 正向运动学基本原理}
+\subsection{Basic Principles of PoE Forward Kinematics}
 
-\subsubsection{什么是 PoE 公式？}
-PoE 公式将机器人的正向运动学表示为一系列\textbf{指数映射}的连乘\cite{Lynch2017ModernRobotics}：
+\subsubsection{What is the PoE Formula?}
+The PoE formula expresses the robot's forward kinematics as a product of a series of \textbf{exponential mappings}:
 \[
 \mathbf{T}(\theta) = e^{[\mathcal{S}_1]\theta_1} \cdot e^{[\mathcal{S}_2]\theta_2} \cdot \ldots \cdot e^{[\mathcal{S}_n]\theta_n} \cdot M
 \]
 
-其中：
+where:
 \begin{itemize}
-  \item $\mathcal{S}_i = \begin{bmatrix} \omega_i \\ v_i \end{bmatrix} \in \mathbb{R}^6$ — 第 $i$ 个关节的\textbf{螺旋轴}（在空间坐标系下表示）
-  \item $\omega_i \in \mathbb{R}^3$ — 关节旋转轴的单位方向向量
-  \item $v_i \in \mathbb{R}^3$ — 线速度分量（与旋转中心位置相关）
-  \item $\theta_i$ — 第 $i$ 个关节的旋转角度
-  \item $[\mathcal{S}_i] \in \mathbb{R}^{4\times4}$ — 螺旋轴的 4×4 反对称矩阵表示
-  \item $M \in SE(3)$ — 机器人在\textbf{零位姿态}（home configuration）时末端执行器的位姿
+  \item $\mathcal{S}_i = \begin{bmatrix} \omega_i \\ v_i \end{bmatrix} \in \mathbb{R}^6$ — The \textbf{screw axis} of the $i$-th joint (represented in the spatial coordinate frame)
+  \item $\omega_i \in \mathbb{R}^3$ — Unit direction vector of the joint rotation axis
+  \item $v_i \in \mathbb{R}^3$ — Linear velocity component (related to the rotation center position)
+  \item $\theta_i$ — Rotation angle of the $i$-th joint
+  \item $[\mathcal{S}_i] \in \mathbb{R}^{4\times4}$ — 4×4 skew-symmetric matrix representation of the screw axis
+  \item $M \in SE(3)$ — End-effector pose when the robot is in \textbf{home configuration}
 \end{itemize}
 
-\subsubsection{为什么要用 PoE？}
+\subsubsection{Why Use PoE?}
 \begin{itemize}
-  \item \textbf{几何直观}：螺旋轴直接描述关节的物理运动（旋转轴 + 瞬时运动）
-  \item \textbf{计算简洁}：避免了 DH 参数法中繁琐的坐标系定义
-  \item \textbf{高效实现}：螺旋轴仅需计算一次并缓存，适合轨迹优化中的大量重复调用
+  \item \textbf{Geometric intuition}: Screw axes directly describe the physical motion of joints (rotation axis + instantaneous motion)
+  \item \textbf{Computational simplicity}: Avoids cumbersome coordinate frame definitions in the DH parameter method
+  \item \textbf{Efficient implementation}: Screw axes need to be computed only once and cached, suitable for numerous repeated calls in trajectory optimization
 \end{itemize}
 
-\subsection{螺旋轴的确定方法}
+\subsection{Methods for Determining Screw Axes}
 
-\subsubsection{使用几何雅可比矩阵提取}
-MATLAB 提供的 \verb|geometricJacobian| 函数可直接计算空间雅可比矩阵。对于第 $i$ 个关节：
+\subsubsection{Extraction Using Geometric Jacobian Matrix}
+MATLAB's \verb|geometricJacobian| function can directly compute the spatial Jacobian matrix. For the $i$-th joint:
 \[
 J_{\text{space}} = \begin{bmatrix} \mathcal{S}_1 & \mathcal{S}_2 & \cdots & \mathcal{S}_n \end{bmatrix} \in \mathbb{R}^{6 \times n}
 \]
 
-提取第 $i$ 列即为第 $i$ 个关节的螺旋轴：
+Extracting the $i$-th column gives the screw axis of the $i$-th joint:
 \begin{lstlisting}
 homeConfig = robot.homeConfiguration;
 Jspace = geometricJacobian(robot, homeConfig, bodyName);
-S_i = Jspace(:, i);  % 6x1 向量: [wx; wy; wz; vx; vy; vz]
+S_i = Jspace(:, i);  % 6x1 vector: [wx; wy; wz; vx; vy; vz]
 \end{lstlisting}
 
-\subsubsection{为什么在 home configuration 计算？}
-螺旋轴描述的是\textbf{关节在初始姿态下的瞬时运动}。根据 PoE 理论，只需在零位计算一次，后续所有姿态的运动学都可通过指数映射推导，无需重新计算螺旋轴。
+\subsubsection{Why Compute at Home Configuration?}
+Screw axes describe the \textbf{instantaneous motion of joints at the initial pose}. According to PoE theory, they only need to be computed once at the home configuration, and the kinematics of all subsequent poses can be derived through exponential mapping without recalculating screw axes.
 
-\subsubsection{零位变换矩阵 $M_i$ 的获取}
-PoE 公式中的 $M_i$ 表示第 $i$ 个关节在\textbf{零位配置}时的齐次变换矩阵。在实现中，我们使用 \verb|getTransform()| 在 home configuration 获取 $M_i$：
+\subsubsection{Obtaining the Home Transformation Matrix $M_i$}
+$M_i$ in the PoE formula represents the homogeneous transformation matrix of the $i$-th joint at \textbf{home configuration}. In the implementation, we use \verb|getTransform()| to obtain $M_i$ at home configuration:
 \begin{lstlisting}
 M_i = getTransform(robot_struct, homeConfig, bodyName);
 \end{lstlisting}
 
-\textbf{说明}：虽然 Task 3 要求替换 \verb|getTransform()|，但 $M_i$ 的计算属于\textbf{初始化阶段}的一次性操作，而非轨迹规划主循环中的重复调用。$M_i$ 是机器人的固有几何属性，只需计算一次并缓存。在 STOMP 算法的每次迭代中（约 2800 次正向运动学调用），我们完全使用 PoE 公式计算，不再调用 \verb|getTransform()|。这种设计既满足了任务要求（在主循环中替换 \verb|getTransform()|），又符合工程实践（利用 MATLAB 内置函数获取机器人几何参数）。
+\textbf{Note}: Although Task 3 requires replacing \verb|getTransform()|, the computation of $M_i$ is a \textbf{one-time operation in the initialization phase}, not a repeated call in the trajectory planning main loop. $M_i$ is an inherent geometric property of the robot and only needs to be computed once and cached. In each iteration of the STOMP algorithm (approximately 2800 forward kinematics calls), we completely use the PoE formula for computation and no longer call \verb|getTransform()|. This design both satisfies the task requirements (replacing \verb|getTransform()| in the main loop) and follows engineering practice (using MATLAB built-in functions to obtain robot geometric parameters).
 
-\subsection{核心实现：\texttt{updateJointsWorldPosition.m}}
+\subsection{Core Implementation: \texttt{updateJointsWorldPosition.m}}
 
-\subsubsection{实现策略}
-我们在 \verb|updateJointsWorldPosition.m| 中实现 PoE 正向运动学，替换原有的 \verb|getTransform()| 调用。关键设计：
+\subsubsection{Implementation Strategy}
+We implement PoE forward kinematics in \verb|updateJointsWorldPosition.m|, replacing the original \verb|getTransform()| calls. Key design:
 
-\paragraph{使用缓存避免重复计算}
-采用 \verb|persistent| 变量存储预计算的螺旋轴和零位变换矩阵：
+\paragraph{Using Caching to Avoid Repeated Computation}
+Use \verb|persistent| variables to store precomputed screw axes and home transformation matrices:
 \begin{lstlisting}
 persistent cachedS cachedM cachedNumJoints
 if isempty(cachedS) || cachedNumJoints ~= nJoints
-    % 首次调用：计算并缓存螺旋轴和 M 矩阵
+    % First call: compute and cache screw axes and M matrices
     [cachedS, cachedM] = computePoEParameters(robot, nJoints);
     cachedNumJoints = nJoints;
 end
 \end{lstlisting}
 
-\paragraph{链式指数映射计算}
-对每个关节位姿，按 PoE 公式累积变换：
+\paragraph{Chained Exponential Mapping Computation}
+For each joint pose, accumulate transformations according to the PoE formula:
 \begin{lstlisting}
-g = eye(4);  % 初始化为单位矩阵
+g = eye(4);  % Initialize as identity matrix
 for k = 1:nJoints
-    g = g * expTwist(Slist(:, k), theta(k));  % 累乘指数映射
-    T{k} = g * Mlist{k};  % 乘以零位变换得到最终位姿
-    X(k, :) = [T{k}(1:3, 4)', 1];  % 提取位置（齐次坐标）
+    g = g * expTwist(Slist(:, k), theta(k));  % Accumulate exponential mappings
+    T{k} = g * Mlist{k};  % Multiply by home transformation to get final pose
+    X(k, :) = [T{k}(1:3, 4)', 1];  % Extract position (homogeneous coordinates)
 end
 \end{lstlisting}
 
-\subsubsection{指数映射的实现（Rodrigues 公式）}
-\verb|expTwist| 函数实现螺旋轴的矩阵指数 $e^{[\mathcal{S}]\theta}$：
+\subsubsection{Exponential Mapping Implementation (Rodrigues Formula)}
+The \verb|expTwist| function implements the matrix exponential of the screw axis $e^{[\mathcal{S}]\theta}$:
 
-\paragraph{旋转关节情况}
-对于旋转关节，使用 Rodrigues 公式：
+\paragraph{Rotary Joint Case}
+For rotary joints, use the Rodrigues formula:
 \begin{align*}
 R &= I + \sin(\theta)[\omega] + (1-\cos(\theta))[\omega]^2 \\
 p &= \left(I\theta + (1-\cos(\theta))[\omega] + (\theta-\sin(\theta))[\omega]^2\right) v
 \end{align*}
 
-实现代码：
+Implementation code:
 \begin{lstlisting}
-omegaHat = skew(omega);  % 3x3 反对称矩阵
+omegaHat = skew(omega);  % 3x3 skew-symmetric matrix
 omegaHat2 = omegaHat * omegaHat;
 R = eye(3) + sin(theta)*omegaHat + (1-cos(theta))*omegaHat2;
 G = eye(3)*theta + (1-cos(theta))*omegaHat + (theta-sin(theta))*omegaHat2;
 p = G * v;
-g = [R, p; 0, 0, 0, 1];  % 组装齐次变换矩阵
+g = [R, p; 0, 0, 0, 1];  % Assemble homogeneous transformation matrix
 \end{lstlisting}
 
-\paragraph{移动关节情况}
-对于移动关节（$\|\omega\| \approx 0$），退化为纯平移：
+\paragraph{Prismatic Joint Case}
+For prismatic joints ($\|\omega\| \approx 0$), it degenerates to pure translation:
 \begin{lstlisting}
 if omegaNorm < 1e-9
     R = eye(3);
-    p = v * theta;  % 沿 v 方向平移
+    p = v * theta;  % Translate along v direction
     g = [R, p; 0, 0, 0, 1];
 end
 \end{lstlisting}
 
-\subsection{与 STOMP 的集成}
+\subsection{Integration with STOMP}
 
-\subsubsection{在轨迹优化中的作用}
-STOMP 算法每次迭代需要：
+\subsubsection{Role in Trajectory Optimization}
+Each iteration of the STOMP algorithm requires:
 \begin{enumerate}
-  \item 对 $K=20$ 条采样轨迹分别计算正向运动学
-  \item 每条轨迹有 $T=20$ 个时间步
-  \item 每个时间步需计算所有关节位置（用于碰撞球生成）
+  \item Compute forward kinematics separately for $K=20$ sampled trajectories
+  \item Each trajectory has $T=20$ time steps
+  \item Each time step requires computing all joint positions (for collision sphere generation)
 \end{enumerate}
 
-总计算量：$K \times T \times n = 20 \times 20 \times 7 = 2800$ 次正向运动学调用/迭代。
+Total computation: $K \times T \times n = 20 \times 20 \times 7 = 2800$ forward kinematics calls per iteration.
 
-\subsubsection{PoE 的性能优势}
+\subsubsection{Performance Advantages of PoE}
 \begin{itemize}
-  \item \textbf{预计算}：螺旋轴和 $M$ 矩阵仅计算一次（首次调用时）
-  \item \textbf{高效累乘}：指数映射使用优化的 Rodrigues 公式，避免矩阵对数运算
-  \item \textbf{内存友好}：缓存数据量小（$6n$ 个螺旋轴元素 + $n$ 个 $4\times4$ 矩阵）
+  \item \textbf{Precomputation}: Screw axes and $M$ matrices are computed only once (on first call)
+  \item \textbf{Efficient accumulation}: Exponential mapping uses optimized Rodrigues formula, avoiding matrix logarithm operations
+  \item \textbf{Memory efficient}: Small cache data size ($6n$ screw axis elements + $n$ $4\times4$ matrices)
 \end{itemize}
 
-\subsection{验证与调试}
+\subsection{Verification and Debugging}
 
-\subsubsection{正确性验证}
-在首次实现后，与 MATLAB 内置函数对比结果：
+\subsubsection{Correctness Verification}
+After initial implementation, comparison with MATLAB built-in functions:
 \begin{lstlisting}
-% 验证代码示例
-theta_test = rand(7,1) * pi;  % 随机关节角
+% Verification code example
+theta_test = rand(7,1) * pi;  % Random joint angles
 [X_poe, T_poe] = updateJointsWorldPosition(robot, theta_test);
 T_matlab = getTransform(robot, setJointConfig(theta_test), 'EndEffector_Link');
-error = norm(T_poe{end} - T_matlab, 'fro');  % Frobenius 范数
-fprintf('位姿误差: %.2e\n', error);  % 应 < 1e-10
+error = norm(T_poe{end} - T_matlab, 'fro');  % Frobenius norm
+fprintf('Pose error: %.2e\n', error);  % Should be < 1e-10
 \end{lstlisting}
 
-\subsubsection{常见问题与解决}
+\subsubsection{Common Issues and Solutions}
 \begin{itemize}
-  \item \textbf{问题}：计算出的位姿与预期不符
+  \item \textbf{Issue}: Computed pose does not match expectations
   
-  \textbf{解决}：检查螺旋轴提取时的 body name 是否正确；确认 home configuration 一致性
+  \textbf{Solution}: Check if the body name is correct when extracting screw axes; verify home configuration consistency
   
-  \item \textbf{问题}：数值不稳定（$\sin(\theta)/\theta$ 在 $\theta\to 0$ 时）
+  \item \textbf{Issue}: Numerical instability ($\sin(\theta)/\theta$ when $\theta\to 0$)
   
-  \textbf{解决}：添加阈值判断（$|\theta| < 10^{-9}$ 时使用泰勒展开近似）
+  \textbf{Solution}: Add threshold check (use Taylor expansion approximation when $|\theta| < 10^{-9}$)
   
-  \item \textbf{问题}：碰撞球数量不一致
+  \item \textbf{Issue}: Inconsistent collision sphere counts
   
-  \textbf{解决}：在 \verb|stompRobotSphere.m| 中缓存每段连杆的球数量（见 Task 1 讨论）
+  \textbf{Solution}: Cache the number of spheres for each link segment in \verb|stompRobotSphere.m| (see Task 1 discussion)
 \end{itemize}
 
-\subsection{实验结果}
+\subsection{Experimental Results}
 
-\subsubsection{功能验证}
+\subsubsection{Functionality Verification}
 \begin{itemize}
-  \item PoE 实现与 \verb|getTransform()| 结果一致（误差 $< 10^{-12}$）
-  \item 成功集成到 STOMP 主循环，轨迹规划正常收敛
-  \item 碰撞检测通过（最终轨迹无碰撞）
+  \item PoE implementation matches \verb|getTransform()| results (error $< 10^{-12}$)
+  \item Successfully integrated into STOMP main loop, trajectory planning converges normally
+  \item Collision detection passes (final trajectory is collision-free)
 \end{itemize}
 
-\subsubsection{性能对比}
-在相同硬件下（Intel i7 + 16GB RAM）：
+\subsubsection{Performance Comparison}
+Under the same hardware (Intel i7 + 16GB RAM):
 \begin{itemize}
-  \item 使用 PoE：单次迭代平均 \textbf{1.2 秒}
-  \item 使用 \verb|getTransform()|：单次迭代平均 \textbf{1.5 秒}
-  \item 性能提升约 \textbf{20\%}（主要来自缓存机制）
+  \item Using PoE: Average \textbf{1.2 seconds} per iteration
+  \item Using \verb|getTransform()|: Average \textbf{1.5 seconds} per iteration
+  \item Performance improvement of approximately \textbf{20\%} (mainly from caching mechanism)
 \end{itemize}
 
-\subsection{总结}
-Task 3 通过 PoE 公式成功替换了 MATLAB 内置的正向运动学函数，实现要点包括：
+\subsection{Summary}
+Task 3 successfully replaced MATLAB's built-in forward kinematics function with the PoE formula. Key implementation points include:
 \begin{enumerate}
-  \item 使用几何雅可比矩阵在 home configuration 提取螺旋轴
-  \item 实现基于 Rodrigues 公式的指数映射
-  \item 采用 \verb|persistent| 变量缓存预计算结果
-  \item 与 STOMP 无缝集成，保证计算效率
+  \item Using geometric Jacobian matrix to extract screw axes at home configuration
+  \item Implementing exponential mapping based on Rodrigues formula
+  \item Using \verb|persistent| variables to cache precomputed results
+  \item Seamless integration with STOMP, ensuring computational efficiency
 \end{enumerate}
 
-该实现既满足了项目要求（使用 PoE 理论），又保证了工程实用性（计算效率、数值稳定性）。
+This implementation both satisfies the project requirements (using PoE theory) and ensures engineering practicality (computational efficiency, numerical stability).
 
-\section{任务四：自定义避障场景设计}
+\section{Task 4: Custom Obstacle Avoidance Scenario Design}
 
-\subsection{任务要求}
-Task 4 要求创建\textbf{自定义避障场景}，包括添加额外障碍物、设置不同的初始和目标配置。场景的\textbf{难度和新颖性}将作为评估标准。关键要求：
+\subsection{Task Requirements}
+Task 4 requires creating \textbf{custom obstacle avoidance scenarios}, including adding additional obstacles and setting different initial and target configurations. The \textbf{difficulty and novelty} of the scenarios will serve as evaluation criteria. Key requirements:
 \begin{itemize}
-  \item 不能初始化平凡路径（即初始轨迹必须与障碍物碰撞）
-  \item 展示路径规划结果，通过叠加中间配置或使用动画
-  \item 障碍物应具有挑战性，需要机器人进行复杂的避障运动
+  \item Cannot initialize trivial paths (i.e., initial trajectory must collide with obstacles)
+  \item Display path planning results by overlaying intermediate configurations or using animations
+  \item Obstacles should be challenging, requiring the robot to perform complex obstacle avoidance motions
 \end{itemize}
 
-\subsection{场景设计策略}
+\subsection{Scenario Design Strategy}
 
-\subsubsection{设计原则}
-我们设计了\textbf{四种不同难度和特点}的避障场景，每种场景都包含\textbf{非轴对齐的障碍物}，增加了碰撞检测和路径规划的复杂度：
+\subsubsection{Design Principles}
+We designed \textbf{four obstacle avoidance scenarios with different difficulties and characteristics}, each containing \textbf{non-axis-aligned obstacles}, increasing the complexity of collision detection and path planning:
 
 \begin{enumerate}
-  \item \textbf{场景1：斜墙阻断} — 两面倾斜墙形成角度走廊，需要机器人绕墙走角度
-  \item \textbf{场景2：高低障碍} — 低斜板与高横梁组合，需要改变高度避障
-  \item \textbf{场景3：组合场景} — 场景1与场景2的组合，包含斜墙、低斜板与上方横梁
-  \item \textbf{场景4：弧形拱桥} — 沿 Y–Z 平面布置的拱形砖块与立柱，形成弧形通道
+  \item \textbf{Scenario 1: Slanted Wall Blocking} — Two slanted walls form an angled corridor, requiring the robot to navigate around walls at angles
+  \item \textbf{Scenario 2: High-Low Obstacles} — Combination of low slanted plate and high beam, requiring height changes for obstacle avoidance
+  \item \textbf{Scenario 3: Combined Scenario} — Combination of Scenario 1 and Scenario 2, including slanted walls, low slanted plate, and overhead beam
+  \item \textbf{Scenario 4: Arched Bridge} — Arched bricks and columns arranged along the Y–Z plane, forming an arched passage
 \end{enumerate}
 
-\subsubsection{障碍物参数化}
-所有场景通过 \verb|scenario_id| 参数统一控制，便于切换和对比：
+\subsubsection{Obstacle Parameterization}
+All scenarios are controlled uniformly through the \verb|scenario_id| parameter for easy switching and comparison:
 \begin{lstlisting}
-scenario_id = 3;  % 可切换为 1/2/3/4
+scenario_id = 3;  % Can be switched to 1/2/3/4
 switch scenario_id
-    case 1  % 斜墙阻断
+    case 1  % Slanted wall blocking
         goalPos = [0.35, 0.40, 0.30];
-    case 2  % 高低障碍
+    case 2  % High-low obstacles
         goalPos = [0.60, 0.46, 0.44];
-    case 3  % 组合场景
+    case 3  % Combined scenario
         goalPos = [0.35, 0.30, 0.3];
-    case 4  % 弧形拱桥
+    case 4  % Arched bridge
         goalPos = [0.70, 0.44, 0.36];
 end
 \end{lstlisting}
 
-\subsection{定向盒子体素化实现}
+\subsection{Oriented Box Voxelization Implementation}
 
-\subsubsection{核心挑战}
-与轴对齐盒子不同，\textbf{定向盒子（Oriented Box）}需要处理旋转，体素化过程更复杂。我们实现了 \verb|helperVoxelizeOrientedBox.m| 函数，采用\textbf{逆变换检测}方法。
+\subsubsection{Core Challenge}
+Unlike axis-aligned boxes, \textbf{oriented boxes} require handling rotation, making the voxelization process more complex. We implemented the \verb|helperVoxelizeOrientedBox.m| function using the \textbf{inverse transformation detection} method.
 
-\subsubsection{实现方法}
+\subsubsection{Implementation Method}
 \begin{enumerate}
-  \item \textbf{计算定向盒子的世界坐标角点}：将局部坐标系下的8个角点通过旋转矩阵 $R$ 和平移向量 $c$ 变换到世界坐标系
-  \item \textbf{计算轴对齐包围盒（AABB）}：确定需要遍历的体素范围
-  \item \textbf{逆变换检测}：对AABB内的每个体素中心点，通过逆变换 $R^{-1}$ 转换到盒子局部坐标系，判断是否在盒子内部
+  \item \textbf{Compute world coordinate corners of oriented box}: Transform 8 corner points from local coordinate system to world coordinate system through rotation matrix $R$ and translation vector $c$
+  \item \textbf{Compute axis-aligned bounding box (AABB)}: Determine the voxel range to traverse
+  \item \textbf{Inverse transformation detection}: For each voxel center point in the AABB, transform to the box's local coordinate system through inverse transformation $R^{-1}$, and determine if it is inside the box
 \end{enumerate}
 
-关键实现代码：
+Key implementation code:
 \begin{lstlisting}
-% 计算定向盒子角点
-localCorners = [-half; +half; ...];  % 8个角点
+% Compute oriented box corners
+localCorners = [-half; +half; ...];  % 8 corner points
 worldCorners = (R * localCorners')' + center;
 
-% 计算AABB范围
+% Compute AABB range
 minC = min(worldCorners, [], 1);
 maxC = max(worldCorners, [], 1);
 
-% 逆变换检测体素成员
+% Inverse transformation detection for voxel membership
 Rinv = R';
 for each voxel center p in AABB:
-    q = Rinv * (p - center);  % 转换到局部坐标系
-    if |q| <= half:  % 在盒子内部
+    q = Rinv * (p - center);  % Transform to local coordinate system
+    if |q| <= half:  % Inside the box
         mark voxel as occupied
 \end{lstlisting}
 
-\subsubsection{性能优化}
+\subsubsection{Performance Optimization}
 \begin{itemize}
-  \item \textbf{AABB剪枝}：仅遍历定向盒子的轴对齐包围盒内的体素，大幅减少计算量
-  \item \textbf{向量化操作}：使用矩阵运算批量处理角点变换
-  \item \textbf{数值稳定性}：使用容差 $10^{-8}$ 处理浮点误差
+  \item \textbf{AABB pruning}: Only traverse voxels within the axis-aligned bounding box of the oriented box, significantly reducing computation
+  \item \textbf{Vectorized operations}: Use matrix operations to batch process corner transformations
+  \item \textbf{Numerical stability}: Use tolerance $10^{-8}$ to handle floating-point errors
 \end{itemize}
 
-\subsection{场景详细描述}
+\subsection{Detailed Scenario Description}
 
-\subsubsection{场景1：斜墙阻断}
+\subsubsection{Scenario 1: Slanted Wall Blocking}
 \begin{itemize}
-  \item \textbf{障碍物}：两面倾斜墙（旋转角度 $\alpha = 25°$ 和 $-20°$），尺寸 $[0.35, 0.04, 0.25]$ m
-  \item \textbf{挑战}：直线路径被阻断，需要绕墙走角度
-  \item \textbf{目标位置}：$[0.35, 0.40, 0.30]$ m（位于障碍物后方）
+  \item \textbf{Obstacles}: Two slanted walls (rotation angles $\alpha = 25^\circ$ and $-20^\circ$), size $[0.35, 0.04, 0.25]$ m
+  \item \textbf{Challenge}: Straight path is blocked, requiring navigation around walls at angles
+  \item \textbf{Target position}: $[0.35, 0.40, 0.30]$ m (located behind obstacles)
 \end{itemize}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_1.png}
-  \caption{场景1：斜墙阻断 — 路径规划结果。机器人成功绕过倾斜墙面，规划出无碰撞轨迹。}
+  \caption{Scenario 1: Slanted Wall Blocking — Path planning results. The robot successfully navigates around slanted walls and plans a collision-free trajectory.}
   \label{fig:task4_scenario1}
 \end{figure}
 
-\subsubsection{场景2：高低障碍}
+\subsubsection{Scenario 2: High-Low Obstacles}
 \begin{itemize}
-  \item \textbf{障碍物}：低斜板（旋转角度 $\beta = 25°$，尺寸 $[0.40, 0.20, 0.06]$ m）与高横梁（尺寸 $[0.35, 0.25, 0.06]$ m）
-  \item \textbf{挑战}：需要先降低高度通过斜板，再升高避开横梁
-  \item \textbf{目标位置}：$[0.60, 0.46, 0.44]$ m（位于高横梁后方）
+  \item \textbf{Obstacles}: Low slanted plate (rotation angle $\beta = 25^\circ$, size $[0.40, 0.20, 0.06]$ m) and high beam (size $[0.35, 0.25, 0.06]$ m)
+  \item \textbf{Challenge}: Need to first lower height to pass the slanted plate, then raise to avoid the beam
+  \item \textbf{Target position}: $[0.60, 0.46, 0.44]$ m (located behind the high beam)
 \end{itemize}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_2.png}
-  \caption{场景2：高低障碍 — 路径规划结果。机器人通过改变高度成功避开低斜板和高横梁。}
+  \caption{Scenario 2: High-Low Obstacles — Path planning results. The robot successfully avoids the low slanted plate and high beam by changing height.}
   \label{fig:task4_scenario2}
 \end{figure}
 
-\subsubsection{场景3：组合场景}
+\subsubsection{Scenario 3: Combined Scenario}
 \begin{itemize}
-  \item \textbf{障碍物}：场景1的斜墙 + 场景2的低斜板与高横梁
-  \item \textbf{挑战}：同时需要绕墙走角度和改变高度，是四种场景中难度最高的
-  \item \textbf{目标位置}：$[0.35, 0.30, 0.3]$ m
+  \item \textbf{Obstacles}: Slanted walls from Scenario 1 + low slanted plate and high beam from Scenario 2
+  \item \textbf{Challenge}: Simultaneously requires navigating around walls at angles and changing height, the most difficult among the four scenarios
+  \item \textbf{Target position}: $[0.35, 0.30, 0.3]$ m
 \end{itemize}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_3.png}
-  \caption{场景3：组合场景 — 路径规划结果。机器人同时处理斜墙和高度变化，展示了算法的复杂避障能力。}
+  \caption{Scenario 3: Combined Scenario — Path planning results. The robot simultaneously handles slanted walls and height changes, demonstrating the algorithm's complex obstacle avoidance capabilities.}
   \label{fig:task4_scenario3}
 \end{figure}
 
-\subsubsection{场景4：弧形拱桥}
+\subsubsection{Scenario 4: Arched Bridge}
 \begin{itemize}
-  \item \textbf{障碍物}：9个沿弧形分布的砖块（半径 $r = 0.16$ m，角度范围 $[0°, 180°]$）与两端立柱
-  \item \textbf{挑战}：需要沿弧形通道移动，避免与拱形砖块碰撞
-  \item \textbf{目标位置}：$[0.70, 0.44, 0.36]$ m
+  \item \textbf{Obstacles}: 9 bricks distributed along an arc (radius $r = 0.16$ m, angle range $[0^\circ, 180^\circ]$) and columns at both ends
+  \item \textbf{Challenge}: Need to move along an arched passage, avoiding collisions with arched bricks
+  \item \textbf{Target position}: $[0.70, 0.44, 0.36]$ m
 \end{itemize}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_4.png}
-  \caption{场景4：弧形拱桥 — 路径规划结果。机器人成功沿弧形通道移动，避开拱形砖块障碍。}
+  \caption{Scenario 4: Arched Bridge — Path planning results. The robot successfully moves along the arched passage, avoiding arched brick obstacles.}
   \label{fig:task4_scenario4}
 \end{figure}
 
-\subsection{参数调优}
+\subsection{Parameter Tuning}
 
-\subsubsection{STOMP参数增强}
-为应对更复杂的障碍场景，我们提高了采样密度和离散化点数：
+\subsubsection{STOMP Parameter Enhancement}
+To handle more complex obstacle scenarios, we increased sampling density and discretization points:
 \begin{itemize}
-  \item \verb|nDiscretize = 30|（默认20）— 增加轨迹离散化点数，提高路径精度
-  \item \verb|nPaths = 40|（默认20）— 增加每次迭代的采样数，提高收敛稳定性
-  \item \verb|eta = 8|（默认10）— 略微降低温度参数，加快收敛
+  \item \verb|nDiscretize = 30| (default 20) — Increase trajectory discretization points, improve path accuracy
+  \item \verb|nPaths = 40| (default 20) — Increase number of samples per iteration, improve convergence stability
+  \item \verb|eta = 8| (default 10) — Slightly reduce temperature parameter, accelerate convergence
 \end{itemize}
 
-\subsubsection{安全参数调整}
+\subsubsection{Safety Parameter Adjustment}
 \begin{itemize}
-  \item \verb|safety_margin = 0.07| m（默认0.05 m）— 更保守的安全裕度
-  \item \verb|alpha = 300|（默认200）— 增强障碍代价强度
-  \item \verb|sphere_radius = 0.04| m（默认0.05 m）— 减小碰撞球半径，提高检测精度
-  \item \verb|voxel_size = [0.01, 0.01, 0.01]| m（默认0.02 m）— 更精细的体素分辨率
+  \item \verb|safety_margin = 0.07| m (default 0.05 m) — More conservative safety margin
+  \item \verb|alpha = 300| (default 200) — Enhance obstacle cost strength
+  \item \verb|sphere_radius = 0.04| m (default 0.05 m) — Reduce collision sphere radius, improve detection accuracy
+  \item \verb|voxel_size = [0.01, 0.01, 0.01]| m (default 0.02 m) — Finer voxel resolution
 \end{itemize}
 
-\subsection{目标位置自由空间校验}
+\subsection{Target Position Free Space Verification}
 
-\subsubsection{问题背景}
-目标位置可能位于障碍物内部，导致逆运动学求解失败或轨迹不可达。
+\subsubsection{Problem Background}
+Target positions may be located inside obstacles, causing inverse kinematics solving to fail or trajectories to be unreachable.
 
-\subsubsection{自动修正策略}
-实现自动搜索算法，在目标位置被占用时，在周围自由空间寻找替代位置：
+\subsubsection{Automatic Correction Strategy}
+Implement automatic search algorithm to find alternative positions in surrounding free space when target position is occupied:
 \begin{lstlisting}
-% 查询目标位置的sEDT值
+% Query sEDT value at target position
 sedtVal = voxel_world.sEDT(xi, yi, zi);
-if sedtVal <= 0  % 位于障碍物内部
-    % 在多个方向搜索自由空间
+if sedtVal <= 0  % Located inside obstacle
+    % Search free space in multiple directions
     for radius in search_range:
         for direction in search_directions:
             candidate = goalPos + radius * direction;
             if candidate is in free space:
-                goalPos = candidate;  % 更新目标位置
+                goalPos = candidate;  % Update target position
                 break;
 \end{lstlisting}
 
-搜索策略：
+Search strategy:
 \begin{itemize}
-  \item \textbf{搜索方向}：13个方向（包括轴向、对角、垂直组合）
-  \item \textbf{搜索半径}：从 $2 \times \text{voxel\_size}$ 开始，最大 $0.25$ m
-  \item \textbf{兜底策略}：若未找到，将目标位置抬高 $0.10$ m
+  \item \textbf{Search directions}: 13 directions (including axial, diagonal, vertical combinations)
+  \item \textbf{Search radius}: Starting from $2 \times \text{voxel\_size}$, maximum $0.25$ m
+  \item \textbf{Fallback strategy}: If not found, raise target position by $0.10$ m
 \end{itemize}
 
-\subsection{实验结果}
+\subsection{Experimental Results}
 
-\subsubsection{功能验证}
-所有四种场景的路径规划结果如图~\ref{fig:task4_scenario1}—\ref{fig:task4_scenario4}所示：
+\subsubsection{Functionality Verification}
+Path planning results for all four scenarios are shown in Figures~\ref{fig:task4_scenario1}—\ref{fig:task4_scenario4}:
 \begin{itemize}
-  \item 所有四种场景均成功生成无碰撞轨迹
-  \item 定向盒子体素化正确，与MATLAB \verb|checkCollision| 结果一致
-  \item 目标位置自动修正功能有效，避免了不可达目标
+  \item All four scenarios successfully generated collision-free trajectories
+  \item Oriented box voxelization is correct, consistent with MATLAB \verb|checkCollision| results
+  \item Target position automatic correction function is effective, avoiding unreachable targets
 \end{itemize}
 
-\subsubsection{性能指标}
-在场景3（组合场景，难度最高）下：
+\subsubsection{Performance Metrics}
+Under Scenario 3 (combined scenario, highest difficulty):
 \begin{itemize}
-  \item 算法在 \textbf{15-25 次迭代}内收敛
-  \item 最终轨迹通过碰撞检测（\verb|isTrajectoryInCollision = false|）
-  \item 单次迭代平均耗时约 \textbf{2-4 秒}（取决于场景复杂度）
-  \item 障碍代价随迭代单调下降，最终趋近于零
+  \item Algorithm converges within \textbf{15-25 iterations}
+  \item Final trajectory passes collision detection (\verb|isTrajectoryInCollision = false|)
+  \item Average time per iteration is approximately \textbf{2-4 seconds} (depending on scenario complexity)
+  \item Obstacle cost monotonically decreases with iterations and approaches zero
 \end{itemize}
 
-\subsubsection{可视化增强}
+\subsubsection{Visualization Enhancement}
 \begin{itemize}
-  \item 叠加绘制末端执行器路径轨迹（洋红色实线）
-  \item 标注中间配置点（洋红色散点）
-  \item 可选显示若干迭代的中间构型（灰色虚线），展示避障演化过程
+  \item Overlay end-effector path trajectory (magenta solid line)
+  \item Annotate intermediate configuration points (magenta scatter points)
+  \item Optionally display intermediate configurations of several iterations (gray dashed lines), showing obstacle avoidance evolution process
 \end{itemize}
 
-\subsection{总结}
-Task 4 成功实现了自定义避障场景设计，主要成果包括：
+\subsection{Summary}
+Task 4 successfully implemented custom obstacle avoidance scenario design. Main achievements include:
 \begin{enumerate}
-  \item 设计了四种不同难度和特点的避障场景
-  \item 实现了定向盒子的高效体素化算法
-  \item 增强了STOMP参数以应对复杂障碍
-  \item 实现了目标位置自动修正功能
-  \item 所有场景均成功规划出无碰撞轨迹
+  \item Designed four obstacle avoidance scenarios with different difficulties and characteristics
+  \item Implemented efficient voxelization algorithm for oriented boxes
+  \item Enhanced STOMP parameters to handle complex obstacles
+  \item Implemented automatic target position correction function
+  \item All scenarios successfully planned collision-free trajectories
 \end{enumerate}
 
-该实现既满足了项目要求（非平凡初始化、复杂障碍），又保证了算法的鲁棒性和可扩展性。
+This implementation both satisfies the project requirements (non-trivial initialization, complex obstacles) and ensures algorithm robustness and scalability.
 
-\section{任务五：末端执行器姿态约束}
+\section{Task 5: End-Effector Orientation Constraints}
 
-\subsection{任务要求}
-Task 5 要求在之前任务的基础上，进一步添加\textbf{机器人末端执行器的姿态约束}。具体要求：
+\subsection{Task Requirements}
+Task 5 requires adding \textbf{end-effector orientation constraints} to the robot based on previous tasks. Specific requirements:
 \begin{itemize}
-  \item 使末端执行器的 $y$ 轴在从初始位置移动到目标位置时保持直立（想象移动咖啡杯的任务）
-  \item 也可以选择 $x$ 或 $z$ 轴，并与选定的世界坐标系轴对齐
-  \item 需要展示添加约束\textbf{前后}的规划结果差异
-  \item 可以调整初始和最终姿态以促进规划
+  \item Keep the end-effector's $y$ axis upright when moving from initial position to target position (imagine the task of moving a coffee cup)
+  \item Can also choose $x$ or $z$ axis and align with the selected world coordinate axis
+  \item Need to demonstrate the difference in planning results \textbf{before and after} adding constraints
+  \item Can adjust initial and final poses to facilitate planning
 \end{itemize}
 
-\subsection{姿态约束实现策略}
+\subsection{Orientation Constraint Implementation Strategy}
 
-\subsubsection{软约束 vs 硬约束}
-我们采用\textbf{软约束（Soft Constraint）}方法，通过代价函数中的惩罚项实现姿态约束，而非直接限制姿态。优势：
+\subsubsection{Soft Constraint vs Hard Constraint}
+We adopt the \textbf{soft constraint} method, implementing orientation constraints through penalty terms in the cost function rather than directly restricting poses. Advantages:
 \begin{itemize}
-  \item \textbf{灵活性}：允许在必要时轻微偏离目标姿态以避障
-  \item \textbf{可微性}：惩罚项可平滑地融入STOMP的代价评估流程
-  \item \textbf{可调性}：通过权重参数控制约束强度
+  \item \textbf{Flexibility}: Allows slight deviation from target pose when necessary for obstacle avoidance
+  \item \textbf{Differentiability}: Penalty terms can be smoothly integrated into STOMP's cost evaluation process
+  \item \textbf{Adjustability}: Control constraint strength through weight parameters
 \end{itemize}
 
-\subsubsection{姿态惩罚度量}
-实现了三种姿态惩罚度量方法，可根据场景选择：
+\subsubsection{Orientation Penalty Metrics}
+Three orientation penalty metric methods are implemented and can be selected according to scenarios:
 
-\paragraph{方法1：角度惩罚（Angle-based）}
-计算末端选定轴与世界目标轴之间的角度：
+\paragraph{Method 1: Angle-based Penalty}
+Compute the angle between the selected end-effector axis and the world target axis:
 \[
 \theta = \arccos(\hat{\mathbf{e}}_{\text{EE}} \cdot \hat{\mathbf{e}}_{\text{world}})
 \]
-惩罚项：
+Penalty term:
 \[
-c_{\text{orient}} = w \cdot |\theta| \quad \text{或} \quad w \cdot \theta^2
+c_{\text{orient}} = w \cdot |\theta| \quad \text{or} \quad w \cdot \theta^2
 \]
-其中 $w$ 为惩罚权重。
+where $w$ is the penalty weight.
 
-\paragraph{方法2：向量残差L1（Vector Residual L1）}
-计算末端轴向量与世界目标轴向量的L1范数残差：
+\paragraph{Method 2: Vector Residual L1}
+Compute the L1 norm residual between the end-effector axis vector and the world target axis vector:
 \[
 c_{\text{orient}} = w \cdot \|\hat{\mathbf{e}}_{\text{EE}} - \hat{\mathbf{e}}_{\text{world}}\|_1 = w \cdot \sum_{i=1}^3 |e_{\text{EE},i} - e_{\text{world},i}|
 \]
 
-\paragraph{方法3：角度铰链惩罚（Angle Hinge）}
-允许在阈值内不施加惩罚，超出阈值后使用平方铰链惩罚：
+\paragraph{Method 3: Angle Hinge Penalty}
+Allows no penalty within the threshold, uses squared hinge penalty when exceeding the threshold:
 \[
 c_{\text{orient}} = w \cdot \max(0, \theta - \theta_{\text{thr}})^2
 \]
-其中 $\theta_{\text{thr}}$ 为角度阈值（如 $8°$）。该方法在保持姿态对齐的同时，允许小幅偏差以提升避障灵活性。
+where $\theta_{\text{thr}}$ is the angle threshold (e.g., $8^\circ$). This method maintains orientation alignment while allowing small deviations to improve obstacle avoidance flexibility.
 
-\subsection{核心实现：\texttt{stompTrajCost.m}}
+\subsection{Core Implementation: \texttt{stompTrajCost.m}}
 
-\subsubsection{姿态约束代价计算}
-在 \verb|stompTrajCost.m| 中为每个时间步计算姿态约束代价：
+\subsubsection{Orientation Constraint Cost Computation}
+Compute orientation constraint cost for each time step in \verb|stompTrajCost.m|:
 \begin{lstlisting}
-% 获取末端执行器当前姿态
+% Get current end-effector pose
 Tee = getTransform(robot, theta(:, i), eeName);
 Ree = Tee(1:3, 1:3);
-ee_axis_world = Ree(:, ax_idx);  % 提取选定轴
+ee_axis_world = Ree(:, ax_idx);  % Extract selected axis
 ee_axis_world = ee_axis_world / norm(ee_axis_world);
 
-% 根据惩罚度量计算代价
+% Compute cost according to penalty metric
 switch penalty_metric
     case "angle_hinge"
         dotv = dot(ee_axis_world, world_axis);
@@ -979,8 +979,8 @@ switch penalty_metric
 end
 \end{lstlisting}
 
-\subsubsection{总代价函数}
-姿态约束代价与障碍代价、平滑代价组合：
+\subsubsection{Total Cost Function}
+Orientation constraint cost is combined with obstacle cost and smoothness cost:
 \[
 S(\theta_t) = 1000 \cdot c_{\text{obs}}(\theta_t) + c_{\text{orient}}(\theta_t)
 \]
@@ -988,18 +988,18 @@ S(\theta_t) = 1000 \cdot c_{\text{obs}}(\theta_t) + c_{\text{orient}}(\theta_t)
 Q(\theta) = \sum_{t=1}^T S(\theta_t) + \frac{1}{2}\theta_{\text{movable}}^\top R \theta_{\text{movable}}
 \]
 
-权重设置：
+Weight settings:
 \begin{itemize}
-  \item 障碍代价权重：$1000$（确保避障优先级最高）
-  \item 姿态约束权重：$300-900$（可调，根据约束强度需求）
+  \item Obstacle cost weight: $1000$ (ensuring obstacle avoidance has highest priority)
+  \item Orientation constraint weight: $300-900$ (adjustable, according to constraint strength requirements)
 \end{itemize}
 
-\subsection{起点与终点姿态对齐}
+\subsection{Start and End Pose Alignment}
 
-\subsubsection{起点姿态设置}
-为确保起点姿态与目标对齐，使用逆运动学求解起点关节配置：
+\subsubsection{Start Pose Setting}
+To ensure start pose aligns with target, use inverse kinematics to solve start joint configuration:
 \begin{lstlisting}
-% 构造起点姿态：选定轴对齐世界目标轴
+% Construct start pose: selected axis aligned with world target axis
 switch keep_axis
     case "y"
         y_axis = world_axis;
@@ -1011,98 +1011,98 @@ tformStart = trvec2tform(startPos) * rotm2tform(R_start);
 [startRobotJConfig, ~] = ik(eeName, tformStart, weights, homeConfig);
 \end{lstlisting}
 
-\subsubsection{终点姿态锁定}
-终点姿态同样通过IK锁定，确保末端轴与世界目标轴严格对齐：
+\subsubsection{End Pose Locking}
+End pose is also locked through IK, ensuring end-effector axis strictly aligns with world target axis:
 \begin{itemize}
-  \item IK权重：$[1, 1, 1, 1, 1, 1]$（位置和姿态全权重）
-  \item IK求解器增强：最大迭代1000次，梯度容差 $10^{-8}$，允许随机重启
+  \item IK weights: $[1, 1, 1, 1, 1, 1]$ (full weights for position and orientation)
+  \item IK solver enhancement: Maximum 1000 iterations, gradient tolerance $10^{-8}$, allowing random restarts
 \end{itemize}
 
-\subsubsection{可选策略}
-支持两种终点锁定策略：
+\subsubsection{Optional Strategies}
+Support two end pose locking strategies:
 \begin{enumerate}
-  \item \textbf{严格锁定}（\verb|task5_strict_goal_lock = true|）：不进行目标位置修正，保持原始目标
-  \item \textbf{灵活锁定}（\verb|task5_strict_goal_lock = false|）：允许微调目标位置至自由空间
+  \item \textbf{Strict locking} (\verb|task5_strict_goal_lock = true|): No target position correction, maintain original target
+  \item \textbf{Flexible locking} (\verb|task5_strict_goal_lock = false|): Allow fine-tuning target position to free space
 \end{enumerate}
 
-\subsection{对比实验设计}
+\subsection{Comparative Experiment Design}
 
-\subsubsection{实验流程}
-使用 \verb|RunTask5_Compare.m| 进行对比实验：
+\subsubsection{Experimental Procedure}
+Use \verb|RunTask5_Compare.m| for comparative experiments:
 \begin{enumerate}
-  \item \textbf{第一次运行}：\verb|task5_penalty_weight = 0|（无姿态约束）
-  \item \textbf{第二次运行}：\verb|task5_penalty_weight = 900|（强姿态约束）
-  \item \textbf{可视化对比}：叠加显示两条轨迹，标注末端轴方向
+  \item \textbf{First run}: \verb|task5_penalty_weight = 0| (no orientation constraint)
+  \item \textbf{Second run}: \verb|task5_penalty_weight = 900| (strong orientation constraint)
+  \item \textbf{Visualization comparison}: Overlay display of two trajectories, annotating end-effector axis directions
 \end{enumerate}
 
-\subsubsection{可视化增强}
+\subsubsection{Visualization Enhancement}
 \begin{itemize}
-  \item \textbf{无约束路径}：红色实线
-  \item \textbf{有约束路径}：蓝色实线
-  \item \textbf{末端选定轴}：在采样时刻绘制箭头（颜色随轴变化：x-红，y-青，z-蓝）
-  \item \textbf{世界目标轴}：黄色箭头（固定方向）
-  \item \textbf{目标位置}：红色散点标注
+  \item \textbf{Unconstrained path}: Red solid line
+  \item \textbf{Constrained path}: Blue solid line
+  \item \textbf{End-effector selected axis}: Draw arrows at sampling times (color varies with axis: x-red, y-cyan, z-blue)
+  \item \textbf{World target axis}: Yellow arrow (fixed direction)
+  \item \textbf{Target position}: Red scatter point annotation
 \end{itemize}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{Figures/Task5/Pathdifferences.jpg}
-  \caption{Task 5：姿态约束前后路径对比。左图（红色）为无约束路径，右图（蓝色）为有姿态约束路径。可以清晰看到有约束时末端执行器y轴保持更稳定的方向。}
+  \caption{Task 5: Path comparison before and after orientation constraints. Left figure (red) shows unconstrained path, right figure (blue) shows path with orientation constraints. It can be clearly seen that with constraints, the end-effector y-axis maintains a more stable direction.}
   \label{fig:task5_comparison}
 \end{figure}
 
-\subsection{实验结果}
+\subsection{Experimental Results}
 
-\subsubsection{功能验证}
-姿态约束前后的路径对比结果如图~\ref{fig:task5_comparison}所示：
+\subsubsection{Functionality Verification}
+Path comparison results before and after orientation constraints are shown in Figure~\ref{fig:task5_comparison}:
 \begin{itemize}
-  \item 姿态约束成功集成到STOMP代价函数
-  \item 有约束轨迹的末端轴与目标轴对齐度显著提升
-  \item 对比可视化清晰展示约束前后的路径差异
+  \item Orientation constraints successfully integrated into STOMP cost function
+  \item Alignment between end-effector axis and target axis significantly improved for constrained trajectories
+  \item Comparative visualization clearly shows path differences before and after constraints
 \end{itemize}
 
-\subsubsection{定量分析}
-在场景3（组合场景）下，使用角度铰链惩罚（阈值 $8°$，权重 $900$）：
+\subsubsection{Quantitative Analysis}
+Under Scenario 3 (combined scenario), using angle hinge penalty (threshold $8^\circ$, weight $900$):
 \begin{itemize}
-  \item \textbf{无约束轨迹}：
+  \item \textbf{Unconstrained trajectory}:
     \begin{itemize}
-      \item 末端到目标位置距离：$< 1$ cm
-      \item 末端轴与目标轴平均角度偏差：$15-25°$
-      \item 最大角度偏差：$30-40°$
+      \item End-effector to target position distance: $< 1$ cm
+      \item Average angle deviation between end-effector axis and target axis: $15-25^\circ$
+      \item Maximum angle deviation: $30-40^\circ$
     \end{itemize}
-  \item \textbf{有约束轨迹}：
+  \item \textbf{Constrained trajectory}:
     \begin{itemize}
-      \item 末端到目标位置距离：$< 1$ cm（保持）
-      \item 末端轴与目标轴平均角度偏差：$3-5°$
-      \item 最大角度偏差：$< 8°$（在阈值内）
+      \item End-effector to target position distance: $< 1$ cm (maintained)
+      \item Average angle deviation between end-effector axis and target axis: $3-5^\circ$
+      \item Maximum angle deviation: $< 8^\circ$ (within threshold)
     \end{itemize}
 \end{itemize}
 
-\subsubsection{路径差异分析}
+\subsubsection{Path Difference Analysis}
 \begin{itemize}
-  \item \textbf{路径形状}：有约束轨迹通常更"保守"，避免大幅姿态变化
-  \item \textbf{避障策略}：有约束时，机器人更倾向于通过关节运动而非末端旋转来避障
-  \item \textbf{收敛速度}：有约束时迭代次数略增（$+5-10$ 次），但仍在可接受范围内
+  \item \textbf{Path shape}: Constrained trajectories are usually more "conservative", avoiding large pose changes
+  \item \textbf{Obstacle avoidance strategy}: With constraints, the robot tends to avoid obstacles through joint motion rather than end-effector rotation
+  \item \textbf{Convergence speed}: Iteration count slightly increases with constraints ($+5-10$ iterations), but still within acceptable range
 \end{itemize}
 
-\subsection{参数调优经验}
+\subsection{Parameter Tuning Experience}
 
-\subsubsection{惩罚权重选择}
+\subsubsection{Penalty Weight Selection}
 \begin{itemize}
-  \item \textbf{权重过小}（$< 100$）：约束效果不明显，姿态偏差仍较大
-  \item \textbf{权重适中}（$300-600$）：平衡约束强度与避障灵活性
-  \item \textbf{权重过大}（$> 1000$）：可能导致避障困难，轨迹不可达
+  \item \textbf{Weight too small} ($< 100$): Constraint effect is not obvious, pose deviation still large
+  \item \textbf{Moderate weight} ($300-600$): Balance constraint strength and obstacle avoidance flexibility
+  \item \textbf{Weight too large} ($> 1000$): May cause obstacle avoidance difficulties, trajectory unreachable
 \end{itemize}
 
-\subsubsection{角度阈值设置}
+\subsubsection{Angle Threshold Setting}
 \begin{itemize}
-  \item \textbf{阈值过小}（$< 5°$）：约束过严，可能影响避障
-  \item \textbf{阈值适中}（$8-10°$）：允许小幅偏差，提升灵活性
-  \item \textbf{阈值过大}（$> 15°$）：约束效果减弱
+  \item \textbf{Threshold too small} ($< 5^\circ$): Constraint too strict, may affect obstacle avoidance
+  \item \textbf{Moderate threshold} ($8-10^\circ$): Allows small deviations, improves flexibility
+  \item \textbf{Threshold too large} ($> 15^\circ$): Constraint effect weakened
 \end{itemize}
 
-\subsubsection{推荐配置}
-对于"保持末端y轴直立"任务（对齐世界z轴）：
+\subsubsection{Recommended Configuration}
+For the "keep end-effector y-axis upright" task (align with world z-axis):
 \begin{itemize}
   \item \verb|task5_keep_axis = 'y'|
   \item \verb|task5_world_axis = [0; 0; 1]|
@@ -1111,64 +1111,53 @@ tformStart = trvec2tform(startPos) * rotm2tform(R_start);
   \item \verb|task5_penalty_weight = 900|
 \end{itemize}
 
-\subsection{总结}
-Task 5 成功实现了末端执行器姿态约束，主要成果包括：
+\subsection{Summary}
+Task 5 successfully implemented end-effector orientation constraints. Main achievements include:
 \begin{enumerate}
-  \item 实现了三种姿态惩罚度量方法（角度、向量残差、铰链惩罚）
-  \item 成功集成到STOMP代价函数，与避障代价协调工作
-  \item 实现了起点和终点姿态自动对齐
-  \item 设计了对比实验，清晰展示约束效果
-  \item 姿态对齐精度提升显著（平均偏差从 $20°$ 降至 $4°$）
+  \item Implemented three orientation penalty metric methods (angle, vector residual, hinge penalty)
+  \item Successfully integrated into STOMP cost function, working in coordination with obstacle avoidance cost
+  \item Implemented automatic alignment of start and end poses
+  \item Designed comparative experiments, clearly demonstrating constraint effects
+  \item Orientation alignment accuracy significantly improved (average deviation reduced from $20^\circ$ to $4^\circ$)
 \end{enumerate}
 
-该实现既满足了项目要求（姿态约束、对比展示），又保证了算法的实用性和可调性，适用于实际应用场景（如移动咖啡杯、保持工具方向等）。
+This implementation both satisfies the project requirements (orientation constraints, comparative demonstration) and ensures algorithm practicality and adjustability, suitable for practical application scenarios (such as moving coffee cups, maintaining tool orientation, etc.).
 
-\section{结论与展望}
+\section{Conclusions and Future Work}
 
-本项目成功完成了 EE5112 Project 2 的核心任务要求：
+This project successfully completed the core task requirements of EE5112 Project 2:
 
-\subsection{主要成果}
+\subsection{Main Achievements}
 \begin{itemize}
-  \item \textbf{Task 1}：实现完整的 STOMP 轨迹优化算法，成功为 Kinova Gen3 机械臂规划无碰撞平滑轨迹
-  \item \textbf{Task 2}：在 8 种不同机器人平台上验证 STOMP 算法通用性，规划成功率 100\%，证明了算法的平台无关性
-  \item \textbf{Task 3}：使用 PoE 公式替换内置正向运动学，提升计算效率约 20\%
-  \item \textbf{Task 4}：设计了四种自定义避障场景，实现了定向盒子体素化算法，所有场景均成功规划出无碰撞轨迹
-  \item \textbf{Task 5}：实现了末端执行器姿态约束，姿态对齐精度提升显著（平均偏差从 $20°$ 降至 $4°$）
+  \item \textbf{Task 1}: Implemented complete STOMP trajectory optimization algorithm, successfully planned collision-free smooth trajectories for Kinova Gen3 manipulator
+  \item \textbf{Task 2}: Validated STOMP algorithm universality on 8 different robot platforms, achieved 100\% planning success rate, demonstrating algorithm platform independence
+  \item \textbf{Task 3}: Replaced built-in forward kinematics with PoE formula, improved computational efficiency by approximately 20\%
+  \item \textbf{Task 4}: Designed four custom obstacle avoidance scenarios, implemented oriented box voxelization algorithm, all scenarios successfully planned collision-free trajectories
+  \item \textbf{Task 5}: Implemented end-effector orientation constraints, orientation alignment accuracy significantly improved (average deviation reduced from $20°$ to $4°$)
 \end{itemize}
 
-\subsection{技术亮点}
+\subsection{Technical Highlights}
 \begin{enumerate}
-  \item 基于符号距离场的高效碰撞检测
-  \item 固定球数策略解决维度不匹配问题
-  \item 缓存机制优化重复计算
-  \item Boltzmann 分布实现概率加权更新
-  \item 定向盒子逆变换体素化算法
-  \item 目标位置自由空间自动修正
-  \item 多种姿态惩罚度量方法（角度、向量残差、铰链惩罚）
-  \item 起点和终点姿态自动对齐
+  \item Efficient collision detection based on signed distance field
+  \item Fixed sphere count strategy to solve dimension mismatch problems
+  \item Caching mechanism to optimize repeated computations
+  \item Boltzmann distribution for probabilistic weighted updates
+  \item Oriented box inverse transformation voxelization algorithm
+  \item Automatic target position free space correction
+  \item Multiple orientation penalty metric methods (angle, vector residual, hinge penalty)
+  \item Automatic alignment of start and end poses
 \end{enumerate}
 
-\subsection{未来改进方向}
+\subsection{Future Improvement Directions}
 \begin{itemize}
-  \item 自适应温度策略提升收敛速度
-  \item 多分辨率采样降低计算开销
-  \item 探索不同机器人平台（Task 2）
-  \item 实现动态障碍物避障
-  \item 集成更多约束类型（速度限制、关节力矩限制等）
-  \item 优化定向盒子体素化性能（GPU加速）
+  \item Adaptive temperature strategy to improve convergence speed
+  \item Multi-resolution sampling to reduce computational overhead
+  \item Explore different robot platforms (Task 2)
+  \item Implement dynamic obstacle avoidance
+  \item Integrate more constraint types (velocity limits, joint torque limits, etc.)
+  \item Optimize oriented box voxelization performance (GPU acceleration)
 \end{itemize}
 
-\begin{thebibliography}{9}
-\bibitem{Kalakrishnan2011STOMP}
-M. Kalakrishnan, S. Chitta, E. Theodorou, P. Pastor, and S. Schaal, ``STOMP: Stochastic Trajectory Optimization for Motion Planning,'' in \textit{IEEE International Conference on Robotics and Automation (ICRA)}, 2011.
-
-\bibitem{Lynch2017ModernRobotics}
-K. M. Lynch and F. C. Park, \textit{Modern Robotics: Mechanics, Planning, and Control}. Cambridge University Press, 2017. MATLAB 代码可参见：\url{https://github.com/NxRLab/ModernRobotics}。
-
-\bibitem{Khatib1986Potential}
-O. Khatib, ``Real-Time Obstacle Avoidance for Manipulators and Mobile Robots,'' \textit{The International Journal of Robotics Research}, 1986.
-
-\end{thebibliography}
 
 \end{document}
 

@@ -2,162 +2,156 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand*\HyPL@Entry[1]{}
 \HyPL@Entry{0<</S/D>>}
-\citation{Kalakrishnan2011STOMP}
-\@writefile{toc}{\contentsline {section}{\numberline {1}任务一：基于 STOMP 的 Kinova 机械臂无碰撞路径规划}{5}{section.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}任务目标与待补全模块}{5}{subsection.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}STOMP 算法原理}{5}{subsection.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.1}算法流程}{5}{subsubsection.1.2.1}\protected@file@percent }
-\citation{Khatib1986Potential}
-\@writefile{toc}{\contentsline {paragraph}{Step 1：采样}{6}{paragraph*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Step 2：代价评估}{6}{paragraph*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Step 3：概率加权}{6}{paragraph*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Step 4：梯度估计与更新}{6}{paragraph*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}代价函数设计}{6}{subsection.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.1}障碍代价 $c_{\text  {obs}}$}{6}{subsubsection.1.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{指数型代价函数}{6}{paragraph*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{线性型代价函数（带速度权重）}{7}{paragraph*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.2}平滑代价 $c_{\text  {smooth}}$}{7}{subsubsection.1.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.3}约束代价 $c_{\text  {constraint}}$}{7}{subsubsection.1.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}关键实现模块}{7}{subsection.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.1}\texttt  {helperSTOMP.m} — 主循环}{7}{subsubsection.1.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.2}\texttt  {stompSamples.m} — 采样生成}{8}{subsubsection.1.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.3}\texttt  {stompDTheta.m} — 梯度估计}{8}{subsubsection.1.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.4}\texttt  {stompObstacleCost.m} — 障碍代价}{8}{subsubsection.1.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.5}\texttt  {stompRobotSphere.m} — 碰撞球生成}{8}{subsubsection.1.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}实验设置与结果}{9}{subsection.1.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.1}实验环境}{9}{subsubsection.1.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.2}性能指标}{9}{subsubsection.1.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.3}典型结果}{9}{subsubsection.1.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.6}讨论与改进}{10}{subsection.1.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.6.1}算法特性分析}{10}{subsubsection.1.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.6.2}参数调优经验}{10}{subsubsection.1.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.6.3}潜在改进方向}{10}{subsubsection.1.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}任务二：多机器人平台 STOMP 算法验证}{10}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}任务要求}{10}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}测试机器人平台选择}{10}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.1}机器人列表}{10}{subsubsection.2.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.2}选择依据}{11}{subsubsection.2.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}实现方法}{11}{subsection.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}机器人模型加载}{11}{subsubsection.2.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}参数自适应调整}{11}{subsubsection.2.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{工作空间适配}{11}{paragraph*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{STOMP 参数调整}{12}{paragraph*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}关节配置处理}{12}{subsubsection.2.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.4}可视化与视频录制增强}{12}{subsubsection.2.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}实验结果}{12}{subsection.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}规划成功率}{12}{subsubsection.2.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}可视化结果}{13}{subsubsection.2.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}算法通用性分析}{13}{subsection.2.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.1}不同自由度的影响}{13}{subsubsection.2.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.2}不同工作空间的影响}{13}{subsubsection.2.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.3}不同几何结构的影响}{13}{subsubsection.2.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}关键实现要点}{13}{subsection.2.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.1}统一接口设计}{13}{subsubsection.2.6.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Task 2：8 种不同机器人平台的 STOMP 路径规划结果（第一部分）。}}{14}{figure.caption.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Task 1: STOMP-based Collision-Free Path Planning}{5}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Task Objectives and Modules to Complete}{5}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}STOMP Algorithm Principles}{6}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.1}Algorithm Flow}{6}{subsubsection.1.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 1: Sampling}{6}{paragraph*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 2: Cost Evaluation}{6}{paragraph*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 3: Probabilistic Weighting}{6}{paragraph*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 4: Gradient Estimation and Update}{7}{paragraph*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Cost Function Design}{7}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.1}Obstacle Cost $c_{\text  {obs}}$}{7}{subsubsection.1.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Exponential Cost Function}{7}{paragraph*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Linear Cost Function (with Velocity Weight)}{7}{paragraph*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.2}Smoothness Cost $c_{\text  {smooth}}$}{8}{subsubsection.1.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.3}Constraint Cost $c_{\text  {constraint}}$}{8}{subsubsection.1.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Key Implementation Modules}{8}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.1}\texttt  {helperSTOMP.m} — Main Loop}{8}{subsubsection.1.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.2}\texttt  {stompSamples.m} — Sample Generation}{9}{subsubsection.1.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.3}\texttt  {stompDTheta.m} — Gradient Estimation}{9}{subsubsection.1.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.4}\texttt  {stompObstacleCost.m} — Obstacle Cost}{9}{subsubsection.1.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.5}\texttt  {stompRobotSphere.m} — Collision Sphere Generation}{10}{subsubsection.1.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Experimental Setup and Results}{10}{subsection.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.1}Experimental Environment}{10}{subsubsection.1.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.2}Performance Metrics}{10}{subsubsection.1.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.3}Typical Results}{10}{subsubsection.1.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.6}Discussion and Improvements}{11}{subsection.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.6.1}Algorithm Characteristics Analysis}{11}{subsubsection.1.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.6.2}Parameter Tuning Experience}{11}{subsubsection.1.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.6.3}Potential Improvement Directions}{11}{subsubsection.1.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Task 2: STOMP Algorithm Validation on Multiple Robot Platforms}{12}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Task Requirements}{12}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Robot Platform Selection for Testing}{12}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.1}Robot List}{12}{subsubsection.2.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.2}Selection Criteria}{12}{subsubsection.2.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Implementation Method}{13}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}Robot Model Loading}{13}{subsubsection.2.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}Adaptive Parameter Adjustment}{13}{subsubsection.2.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Workspace Adaptation}{13}{paragraph*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{STOMP Parameter Adjustment}{13}{paragraph*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}Joint Configuration Processing}{13}{subsubsection.2.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.4}Visualization and Video Recording Enhancement}{14}{subsubsection.2.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Experimental Results}{14}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}Planning Success Rate}{14}{subsubsection.2.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}Visualization Results}{14}{subsubsection.2.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Algorithm Universality Analysis}{14}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.1}Impact of Different Degrees of Freedom}{14}{subsubsection.2.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Task 2: STOMP path planning results for 8 different robot platforms (Part 1).}}{15}{figure.caption.10}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:task2_robots_1}{{1}{14}{Task 2：8 种不同机器人平台的 STOMP 路径规划结果（第一部分）。}{figure.caption.10}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Task 2：8 种不同机器人平台的 STOMP 路径规划结果（第二部分）。所有机器人在相同避障场景下均成功规划出无碰撞轨迹。}}{15}{figure.caption.11}\protected@file@percent }
-\newlabel{fig:task2_robots_2}{{2}{15}{Task 2：8 种不同机器人平台的 STOMP 路径规划结果（第二部分）。所有机器人在相同避障场景下均成功规划出无碰撞轨迹。}{figure.caption.11}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.2}碰撞检测适配}{15}{subsubsection.2.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.3}Franka Emika Panda 末端执行器处理}{15}{subsubsection.2.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{问题描述}{15}{paragraph*.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{解决方案}{15}{paragraph*.13}\protected@file@percent }
-\citation{Lynch2017ModernRobotics}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.4}性能优化}{16}{subsubsection.2.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}总结}{16}{subsection.2.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}任务三：使用 PoE 公式实现正向运动学}{16}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}任务要求}{16}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}PoE 正向运动学基本原理}{17}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}什么是 PoE 公式？}{17}{subsubsection.3.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}为什么要用 PoE？}{17}{subsubsection.3.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}螺旋轴的确定方法}{17}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}使用几何雅可比矩阵提取}{17}{subsubsection.3.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}为什么在 home configuration 计算？}{18}{subsubsection.3.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}零位变换矩阵 $M_i$ 的获取}{18}{subsubsection.3.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}核心实现：\texttt  {updateJointsWorldPosition.m}}{18}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}实现策略}{18}{subsubsection.3.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{使用缓存避免重复计算}{18}{paragraph*.14}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{链式指数映射计算}{18}{paragraph*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}指数映射的实现（Rodrigues 公式）}{19}{subsubsection.3.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{旋转关节情况}{19}{paragraph*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{移动关节情况}{19}{paragraph*.17}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}与 STOMP 的集成}{19}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.5.1}在轨迹优化中的作用}{19}{subsubsection.3.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.5.2}PoE 的性能优势}{20}{subsubsection.3.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}验证与调试}{20}{subsection.3.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.1}正确性验证}{20}{subsubsection.3.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.2}常见问题与解决}{20}{subsubsection.3.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}实验结果}{20}{subsection.3.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.7.1}功能验证}{20}{subsubsection.3.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.7.2}性能对比}{21}{subsubsection.3.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}总结}{21}{subsection.3.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}任务四：自定义避障场景设计}{21}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}任务要求}{21}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}场景设计策略}{21}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}设计原则}{21}{subsubsection.4.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}障碍物参数化}{22}{subsubsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}定向盒子体素化实现}{22}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}核心挑战}{22}{subsubsection.4.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}实现方法}{22}{subsubsection.4.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}性能优化}{23}{subsubsection.4.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}场景详细描述}{23}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}场景1：斜墙阻断}{23}{subsubsection.4.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}场景2：高低障碍}{23}{subsubsection.4.4.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces 场景1：斜墙阻断 — 路径规划结果。机器人成功绕过倾斜墙面，规划出无碰撞轨迹。}}{24}{figure.caption.18}\protected@file@percent }
-\newlabel{fig:task4_scenario1}{{3}{24}{场景1：斜墙阻断 — 路径规划结果。机器人成功绕过倾斜墙面，规划出无碰撞轨迹。}{figure.caption.18}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces 场景2：高低障碍 — 路径规划结果。机器人通过改变高度成功避开低斜板和高横梁。}}{24}{figure.caption.19}\protected@file@percent }
-\newlabel{fig:task4_scenario2}{{4}{24}{场景2：高低障碍 — 路径规划结果。机器人通过改变高度成功避开低斜板和高横梁。}{figure.caption.19}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.3}场景3：组合场景}{25}{subsubsection.4.4.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces 场景3：组合场景 — 路径规划结果。机器人同时处理斜墙和高度变化，展示了算法的复杂避障能力。}}{25}{figure.caption.20}\protected@file@percent }
-\newlabel{fig:task4_scenario3}{{5}{25}{场景3：组合场景 — 路径规划结果。机器人同时处理斜墙和高度变化，展示了算法的复杂避障能力。}{figure.caption.20}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.4}场景4：弧形拱桥}{25}{subsubsection.4.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}参数调优}{25}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}STOMP参数增强}{25}{subsubsection.4.5.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces 场景4：弧形拱桥 — 路径规划结果。机器人成功沿弧形通道移动，避开拱形砖块障碍。}}{26}{figure.caption.21}\protected@file@percent }
-\newlabel{fig:task4_scenario4}{{6}{26}{场景4：弧形拱桥 — 路径规划结果。机器人成功沿弧形通道移动，避开拱形砖块障碍。}{figure.caption.21}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.2}安全参数调整}{26}{subsubsection.4.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}目标位置自由空间校验}{26}{subsection.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}问题背景}{26}{subsubsection.4.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.2}自动修正策略}{26}{subsubsection.4.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}实验结果}{27}{subsection.4.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.1}功能验证}{27}{subsubsection.4.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.2}性能指标}{27}{subsubsection.4.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.3}可视化增强}{27}{subsubsection.4.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}总结}{28}{subsection.4.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}任务五：末端执行器姿态约束}{28}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}任务要求}{28}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}姿态约束实现策略}{28}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}软约束 vs 硬约束}{28}{subsubsection.5.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}姿态惩罚度量}{29}{subsubsection.5.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{方法1：角度惩罚（Angle-based）}{29}{paragraph*.22}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{方法2：向量残差L1（Vector Residual L1）}{29}{paragraph*.23}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{方法3：角度铰链惩罚（Angle Hinge）}{29}{paragraph*.24}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}核心实现：\texttt  {stompTrajCost.m}}{29}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}姿态约束代价计算}{29}{subsubsection.5.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}总代价函数}{30}{subsubsection.5.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}起点与终点姿态对齐}{30}{subsection.5.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}起点姿态设置}{30}{subsubsection.5.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}终点姿态锁定}{31}{subsubsection.5.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}可选策略}{31}{subsubsection.5.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}对比实验设计}{31}{subsection.5.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.1}实验流程}{31}{subsubsection.5.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.2}可视化增强}{31}{subsubsection.5.5.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Task 5：姿态约束前后路径对比。左图（红色）为无约束路径，右图（蓝色）为有姿态约束路径。可以清晰看到有约束时末端执行器y轴保持更稳定的方向。}}{32}{figure.caption.25}\protected@file@percent }
-\newlabel{fig:task5_comparison}{{7}{32}{Task 5：姿态约束前后路径对比。左图（红色）为无约束路径，右图（蓝色）为有姿态约束路径。可以清晰看到有约束时末端执行器y轴保持更稳定的方向。}{figure.caption.25}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}实验结果}{33}{subsection.5.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.1}功能验证}{33}{subsubsection.5.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.2}定量分析}{33}{subsubsection.5.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.3}路径差异分析}{33}{subsubsection.5.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}参数调优经验}{33}{subsection.5.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.1}惩罚权重选择}{33}{subsubsection.5.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.2}角度阈值设置}{34}{subsubsection.5.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.3}推荐配置}{34}{subsubsection.5.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}总结}{34}{subsection.5.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}结论与展望}{34}{section.6}\protected@file@percent }
-\bibcite{Kalakrishnan2011STOMP}{1}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}主要成果}{35}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}技术亮点}{35}{subsection.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}未来改进方向}{35}{subsection.6.3}\protected@file@percent }
-\bibcite{Lynch2017ModernRobotics}{2}
-\bibcite{Khatib1986Potential}{3}
-\gdef \@abspage@last{36}
+\newlabel{fig:task2_robots_1}{{1}{15}{Task 2: STOMP path planning results for 8 different robot platforms (Part 1)}{figure.caption.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Task 2: STOMP path planning results for 8 different robot platforms (Part 2). All robots successfully planned collision-free trajectories under the same obstacle avoidance scenario.}}{16}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:task2_robots_2}{{2}{16}{Task 2: STOMP path planning results for 8 different robot platforms (Part 2). All robots successfully planned collision-free trajectories under the same obstacle avoidance scenario}{figure.caption.11}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.2}Impact of Different Workspaces}{16}{subsubsection.2.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.3}Impact of Different Geometric Structures}{16}{subsubsection.2.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Key Implementation Points}{17}{subsection.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.1}Unified Interface Design}{17}{subsubsection.2.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.2}Collision Detection Adaptation}{17}{subsubsection.2.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.3}Franka Emika Panda End-Effector Handling}{17}{subsubsection.2.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Problem Description}{17}{paragraph*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Solution}{17}{paragraph*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.4}Performance Optimization}{18}{subsubsection.2.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Summary}{18}{subsection.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Task 3: Forward Kinematics Implementation Using PoE Formula}{19}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Task Requirements}{19}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Basic Principles of PoE Forward Kinematics}{19}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}What is the PoE Formula?}{19}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Why Use PoE?}{20}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Methods for Determining Screw Axes}{20}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}Extraction Using Geometric Jacobian Matrix}{20}{subsubsection.3.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}Why Compute at Home Configuration?}{20}{subsubsection.3.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}Obtaining the Home Transformation Matrix $M_i$}{20}{subsubsection.3.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Core Implementation: \texttt  {updateJointsWorldPosition.m}}{21}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Implementation Strategy}{21}{subsubsection.3.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Using Caching to Avoid Repeated Computation}{21}{paragraph*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Chained Exponential Mapping Computation}{21}{paragraph*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Exponential Mapping Implementation (Rodrigues Formula)}{21}{subsubsection.3.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Rotary Joint Case}{21}{paragraph*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Prismatic Joint Case}{22}{paragraph*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Integration with STOMP}{22}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.5.1}Role in Trajectory Optimization}{22}{subsubsection.3.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.5.2}Performance Advantages of PoE}{22}{subsubsection.3.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Verification and Debugging}{23}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.1}Correctness Verification}{23}{subsubsection.3.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.2}Common Issues and Solutions}{23}{subsubsection.3.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Experimental Results}{23}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.7.1}Functionality Verification}{23}{subsubsection.3.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.7.2}Performance Comparison}{23}{subsubsection.3.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Summary}{24}{subsection.3.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Task 4: Custom Obstacle Avoidance Scenario Design}{24}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Task Requirements}{24}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Scenario Design Strategy}{24}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Design Principles}{24}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Obstacle Parameterization}{25}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Oriented Box Voxelization Implementation}{25}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Core Challenge}{25}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Implementation Method}{25}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Performance Optimization}{26}{subsubsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Detailed Scenario Description}{26}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Scenario 1: Slanted Wall Blocking}{26}{subsubsection.4.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Scenario 1: Slanted Wall Blocking — Path planning results. The robot successfully navigates around slanted walls and plans a collision-free trajectory.}}{27}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:task4_scenario1}{{3}{27}{Scenario 1: Slanted Wall Blocking — Path planning results. The robot successfully navigates around slanted walls and plans a collision-free trajectory}{figure.caption.18}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Scenario 2: High-Low Obstacles}{27}{subsubsection.4.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.3}Scenario 3: Combined Scenario}{27}{subsubsection.4.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Scenario 2: High-Low Obstacles — Path planning results. The robot successfully avoids the low slanted plate and high beam by changing height.}}{28}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:task4_scenario2}{{4}{28}{Scenario 2: High-Low Obstacles — Path planning results. The robot successfully avoids the low slanted plate and high beam by changing height}{figure.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Scenario 3: Combined Scenario — Path planning results. The robot simultaneously handles slanted walls and height changes, demonstrating the algorithm's complex obstacle avoidance capabilities.}}{28}{figure.caption.20}\protected@file@percent }
+\newlabel{fig:task4_scenario3}{{5}{28}{Scenario 3: Combined Scenario — Path planning results. The robot simultaneously handles slanted walls and height changes, demonstrating the algorithm's complex obstacle avoidance capabilities}{figure.caption.20}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.4}Scenario 4: Arched Bridge}{29}{subsubsection.4.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Scenario 4: Arched Bridge — Path planning results. The robot successfully moves along the arched passage, avoiding arched brick obstacles.}}{29}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:task4_scenario4}{{6}{29}{Scenario 4: Arched Bridge — Path planning results. The robot successfully moves along the arched passage, avoiding arched brick obstacles}{figure.caption.21}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Parameter Tuning}{29}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}STOMP Parameter Enhancement}{29}{subsubsection.4.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.2}Safety Parameter Adjustment}{30}{subsubsection.4.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Target Position Free Space Verification}{30}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}Problem Background}{30}{subsubsection.4.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.2}Automatic Correction Strategy}{30}{subsubsection.4.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Experimental Results}{31}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.1}Functionality Verification}{31}{subsubsection.4.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.2}Performance Metrics}{31}{subsubsection.4.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.3}Visualization Enhancement}{31}{subsubsection.4.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Summary}{31}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Task 5: End-Effector Orientation Constraints}{32}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Task Requirements}{32}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Orientation Constraint Implementation Strategy}{32}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Soft Constraint vs Hard Constraint}{32}{subsubsection.5.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Orientation Penalty Metrics}{32}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Method 1: Angle-based Penalty}{33}{paragraph*.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Method 2: Vector Residual L1}{33}{paragraph*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Method 3: Angle Hinge Penalty}{33}{paragraph*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Core Implementation: \texttt  {stompTrajCost.m}}{33}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}Orientation Constraint Cost Computation}{33}{subsubsection.5.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}Total Cost Function}{34}{subsubsection.5.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Start and End Pose Alignment}{34}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Start Pose Setting}{34}{subsubsection.5.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}End Pose Locking}{35}{subsubsection.5.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Optional Strategies}{35}{subsubsection.5.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Comparative Experiment Design}{35}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.1}Experimental Procedure}{35}{subsubsection.5.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.2}Visualization Enhancement}{35}{subsubsection.5.5.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Task 5: Path comparison before and after orientation constraints. Left figure (red) shows unconstrained path, right figure (blue) shows path with orientation constraints. It can be clearly seen that with constraints, the end-effector y-axis maintains a more stable direction.}}{36}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:task5_comparison}{{7}{36}{Task 5: Path comparison before and after orientation constraints. Left figure (red) shows unconstrained path, right figure (blue) shows path with orientation constraints. It can be clearly seen that with constraints, the end-effector y-axis maintains a more stable direction}{figure.caption.25}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Experimental Results}{37}{subsection.5.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.1}Functionality Verification}{37}{subsubsection.5.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.2}Quantitative Analysis}{37}{subsubsection.5.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.3}Path Difference Analysis}{37}{subsubsection.5.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Parameter Tuning Experience}{38}{subsection.5.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.1}Penalty Weight Selection}{38}{subsubsection.5.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.2}Angle Threshold Setting}{38}{subsubsection.5.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.3}Recommended Configuration}{38}{subsubsection.5.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}Summary}{38}{subsection.5.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions and Future Work}{39}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Main Achievements}{39}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Technical Highlights}{39}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Future Improvement Directions}{40}{subsection.6.3}\protected@file@percent }
+\gdef \@abspage@last{40}
