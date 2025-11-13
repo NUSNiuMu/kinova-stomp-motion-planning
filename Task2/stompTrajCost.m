@@ -41,7 +41,6 @@ end
 
 %% Local trajectory cost: you need to specify the relative weights between different costs
 Stheta = 1000*qo_cost + qc_cost;
-disp(sum(qo_cost))
 
 
 % sum over time and add the smoothness cost
