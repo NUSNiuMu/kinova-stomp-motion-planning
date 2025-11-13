@@ -720,12 +720,26 @@ for each voxel center p in AABB:
   \item \textbf{目标位置}：$[0.35, 0.40, 0.30]$ m（位于障碍物后方）
 \end{itemize}
 
-\subsubsection{场景2：高低障碍}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_1.png}
+  \caption{场景1：斜墙阻断 — 路径规划结果。机器人成功绕过倾斜墙面，规划出无碰撞轨迹。}
+  \label{fig:task4_scenario1}
+\end{figure}
+
+WD\subsubsection{场景2：高低障碍}
 \begin{itemize}
   \item \textbf{障碍物}：低斜板（旋转角度 $\beta = 25°$，尺寸 $[0.40, 0.20, 0.06]$ m）与高横梁（尺寸 $[0.35, 0.25, 0.06]$ m）
   \item \textbf{挑战}：需要先降低高度通过斜板，再升高避开横梁
   \item \textbf{目标位置}：$[0.60, 0.46, 0.44]$ m（位于高横梁后方）
 \end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_2.png}
+  \caption{场景2：高低障碍 — 路径规划结果。机器人通过改变高度成功避开低斜板和高横梁。}
+  \label{fig:task4_scenario2}
+\end{figure}
 
 \subsubsection{场景3：组合场景}
 \begin{itemize}
@@ -734,12 +748,26 @@ for each voxel center p in AABB:
   \item \textbf{目标位置}：$[0.35, 0.30, 0.3]$ m
 \end{itemize}
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_3.png}
+  \caption{场景3：组合场景 — 路径规划结果。机器人同时处理斜墙和高度变化，展示了算法的复杂避障能力。}
+  \label{fig:task4_scenario3}
+\end{figure}
+
 \subsubsection{场景4：弧形拱桥}
 \begin{itemize}
   \item \textbf{障碍物}：9个沿弧形分布的砖块（半径 $r = 0.16$ m，角度范围 $[0°, 180°]$）与两端立柱
   \item \textbf{挑战}：需要沿弧形通道移动，避免与拱形砖块碰撞
   \item \textbf{目标位置}：$[0.70, 0.44, 0.36]$ m
 \end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{Figures/Task4/Task4_scenario_4.png}
+  \caption{场景4：弧形拱桥 — 路径规划结果。机器人成功沿弧形通道移动，避开拱形砖块障碍。}
+  \label{fig:task4_scenario4}
+\end{figure}
 
 \subsection{参数调优}
 
@@ -789,6 +817,7 @@ if sedtVal <= 0  % 位于障碍物内部
 \subsection{实验结果}
 
 \subsubsection{功能验证}
+所有四种场景的路径规划结果如图~\ref{fig:task4_scenario1}—\ref{fig:task4_scenario4}所示：
 \begin{itemize}
   \item 所有四种场景均成功生成无碰撞轨迹
   \item 定向盒子体素化正确，与MATLAB \verb|checkCollision| 结果一致
@@ -963,9 +992,17 @@ tformStart = trvec2tform(startPos) * rotm2tform(R_start);
   \item \textbf{目标位置}：红色散点标注
 \end{itemize}
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{Figures/Task5/Pathdifferences.jpg}
+  \caption{Task 5：姿态约束前后路径对比。左图（红色）为无约束路径，右图（蓝色）为有姿态约束路径。可以清晰看到有约束时末端执行器y轴保持更稳定的方向。}
+  \label{fig:task5_comparison}
+\end{figure}
+
 \subsection{实验结果}
 
 \subsubsection{功能验证}
+姿态约束前后的路径对比结果如图~\ref{fig:task5_comparison}所示：
 \begin{itemize}
   \item 姿态约束成功集成到STOMP代价函数
   \item 有约束轨迹的末端轴与目标轴对齐度显著提升
