@@ -165,71 +165,184 @@ isTrajectoryInCollision = any(inCollision)
 
 
 %% Record the whole training/learning process in video file
-enableVideoTraining = 0;
+%% ================== Video Recording (Stable, with obstacles & goal) ==================
+% 控制开关
+enableVideoTraining = 1;       % 训练过程中各个 iteration 的动画
+enableVideoPlanned  = 0;       % 最终规划轨迹动画
+displayAnimation    = 1;       % 只显示不保存
+goalWorld = [0.35, 0.55, 0.35];   % 你的目标点世界坐标
+
+
+% ========= 通用：创建一个稳定的绘图场景（共用） =========
+function [fig, ax, hText, hObs, hGoal] = localSetupScene(figPos, voxel_world, goalWorld)
+    fig = figure('Visible','on','Color','w','Position',figPos);
+    ax  = axes('Parent',fig); axis(ax,'equal'); view(ax,3); grid(ax,'on');
+    hold(ax,'on'); axis(ax,'manual');                    % 锁定坐标轴范围，防止 show 改动
+    xlabel(ax,'X'); ylabel(ax,'Y'); zlabel(ax,'Z');
+
+    xlim(ax, [-0.2 1.2]);
+    ylim(ax, [-0.2 1.2]);
+    zlim(ax, [0 0.7]);
+    % === 固定为对角线的上方视角 ===
+    axis(ax,'vis3d');                % 锁定比例，避免视角被缩放扭曲
+    camproj(ax,'perspective');       % 透视投影更真实
+    
+    % 先锁定相机参数为手动（防止 show 重置）
+    ax.CameraViewAngleMode = 'manual';
+    ax.CameraPositionMode  = 'manual';
+    ax.CameraTargetMode    = 'manual';
+    ax.CameraUpVectorMode  = 'manual';
+    
+    % 用当前轴范围，自动计算对角线视角
+    xl = xlim(ax); yl = ylim(ax); zl = zlim(ax);
+    c  = [mean(xl) mean(yl) mean(zl)];      % 目标=场景中心
+    sz = [diff(xl) diff(yl) diff(zl)];      % 场景尺寸
+    
+    margin = 0.35;                          % 离场景远一点，避免遮挡（可调 0.2~0.6）
+    camtarget(ax, c);
+    campos(ax, c + (1+margin)*[sz(1) sz(2) sz(3)]);  % 从对角线方向看向中心
+    camup(ax, [0 0 1]);                     % z 轴向上
+    
+    % 设置方位角/俯仰角为对角线上方（再保险）
+    view(ax, 30, 0);                       % az=45°, el=35°（可改 45~60）
+    
+    % 打光：让棕色障碍物更立体
+    camlight(ax,'headlight'); 
+    lighting(ax,'gouraud');
 
 
 
-v = VideoWriter('KinvaGen3_Training.avi');
-v.FrameRate = 15;
-open(v);
+    % 文本叠加
+    hText = text(ax, 0.02, 0.95, 0, 'Iteration = 0', ...
+        'Units','normalized','Color','k','FontSize',14,'HorizontalAlignment','left');
 
-htext = text(-0.2,0.6,0.7,'Iteration = 0','HorizontalAlignment','left','FontSize',14);
+    % ====== 绘制障碍物（若 voxel_world 可用则尝试 isosurface）======
+    hObs = gobjects(1);
+    try
+        % 支持 sEDT 或二值占据栅格两种情况
+        if isfield(voxel_world,'sEDT') && ~isempty(voxel_world.sEDT)
+            sEDT   = voxel_world.sEDT;
+            corner = voxel_world.Env_size(1,:);     % [xmin ymin zmin]
+            voxel  = voxel_world.voxel_size;        % [vx vy vz]
+            [Nx,Ny,Nz] = size(sEDT);
+            [Xg,Yg,Zg] = ndgrid(0:Nx-1, 0:Ny-1, 0:Nz-1);
+            Xw = corner(1) + Xg*voxel(1);
+            Yw = corner(2) + Yg*voxel(2);
+            Zw = corner(3) + Zg*voxel(3);
 
-if enableVideoTraining == 1
-    theta_animation_tmp = theta_animation(~cellfun('isempty',theta_animation));
-    nTraining = length(theta_animation_tmp);
-    for k=0:5:nTraining
-        
-        UpdatedText = ['Iteration = ',num2str(k)];
-        set(htext,'String',UpdatedText)
-        theta_tmp = theta_animation_tmp{k+1};
+            p = patch(isosurface(Xw,Yw,Zw, sEDT, 0));           % 0 等值面近似障碍边界
+            set(p,'Parent',ax,'FaceColor',[0.55 0.27 0.07],'EdgeColor','none','FaceAlpha',0.35);
 
-        for t=1:size(theta_tmp,2)
-            show(robot, theta_tmp(:,t),'PreservePlot', false, 'Frames', 'on');
-            %             drawnow;
-            frame = getframe(gcf);
-            writeVideo(v,frame);
-%             pause(1/15);
-            %     pause;
+            camlight(ax); lighting(ax,'gouraud');
+            hObs = p;
+        elseif isfield(voxel_world,'occ') && ~isempty(voxel_world.occ)
+            occ    = voxel_world.occ;                % 逻辑/0-1 占据
+            corner = voxel_world.Env_size(1,:);
+            voxel  = voxel_world.voxel_size;
+            [Nx,Ny,Nz] = size(occ);
+            [Xg,Yg,Zg] = ndgrid(0:Nx-1, 0:Ny-1, 0:Nz-1);
+            Xw = corner(1) + Xg*voxel(1);
+            Yw = corner(2) + Yg*voxel(2);
+            Zw = corner(3) + Zg*voxel(3);
+
+            p = patch(isosurface(Xw,Yw,Zw, occ>0.5, 0.5));
+            set(p,'Parent',ax,'FaceColor',[0.55 0.27 0.07],'EdgeColor','none','FaceAlpha',0.35);
+            camlight(ax); lighting(ax,'gouraud');
+            hObs = p;
         end
-        pause(1/15);
+    catch
+        % 如果体素信息不完整就忽略障碍物可视化
+        hObs = gobjects(1);
+    end
+
+    % ====== 目标点（若提供）======
+    hGoal = gobjects(1);
+    if exist('goalWorld','var') && ~isempty(goalWorld) && numel(goalWorld)==3
+        hGoal = plot3(ax, goalWorld(1), goalWorld(2), goalWorld(3), ...
+    'o', 'MarkerSize', 5, 'MarkerFaceColor', [0.85 0.2 0.2], 'MarkerEdgeColor', 'none');
+
+        % 小球更显眼的版本（取消注释使用）
+        % [sx,sy,sz] = sphere(18);
+        % rGoal = 0.03;
+        % hGoal = surf(ax, rGoal*sx+goalWorld(1), rGoal*sy+goalWorld(2), rGoal*sz+goalWorld(3), ...
+        %    'EdgeColor','none','FaceAlpha',0.9,'FaceColor',[0.9 0.3 0.3]);
     end
 end
-close(v);
 
-
-
-%% Record planned trajectory to video files
-enableVideo = 0;
-if enableVideo == 1
-    v = VideoWriter('KinvaGen3_wEEConY3.avi');
-    v.FrameRate =2;
+% ========= 通用：打开 VideoWriter（mp4 首选，失败回退 avi） =========
+function v = localOpenWriter(fname, fps)
+    try
+        v = VideoWriter(fullfile(pwd, [fname '.mp4']), 'MPEG-4');
+        v.Quality = 100;
+    catch
+        v = VideoWriter(fullfile(pwd, [fname '.avi']), 'Motion JPEG AVI');
+        v.Quality = 100;
+    end
+    v.FrameRate = fps;
     open(v);
-
-    for t=1:size(theta,2)
-        show(robot, theta(:,t),'PreservePlot', false, 'Frames', 'on');
-        drawnow;
-        frame = getframe(gcf);
-        writeVideo(v,frame);
-        pause(5/20);
-        %     pause;
-    end
-    close(v);
 end
-%% Show the planned trajectory
-displayAnimation = 1;
+
+% ========= 训练过程视频：播放 theta_animation（只更新机器人）=========
+if enableVideoTraining
+    [figT, axT, hTextT, hObsT, hGoalT] = localSetupScene([100 100 1280 720], voxel_world, exist('goalWorld','var')*goalWorld);
+    vT = localOpenWriter('KinovaGen3_Training', 5);
+
+    theta_animation_tmp = {};
+    if exist('theta_animation','var') && ~isempty(theta_animation)
+        theta_animation_tmp = theta_animation(~cellfun('isempty', theta_animation));
+    end
+    nTraining = numel(theta_animation_tmp);
+
+    for k = 1:5:nTraining
+        if isgraphics(hObsT),  uistack(hObsT,'top');  end
+        if isgraphics(hGoalT), uistack(hGoalT,'top'); end
+        set(hTextT,'String',sprintf('Iteration = %d',k));
+
+        theta_k = theta_animation_tmp{k};
+        for t = 1:size(theta_k,2)
+            show(robot, theta_k(:,t), 'Parent', axT, 'PreservePlot', false, 'Frames', 'off');
+            show(robot, theta_k(:,t), 'Parent', axT, 'PreservePlot', false, 'Frames', 'off');
+
+
+            hold(axT,'on');                               % 某些版本 show 会重置 hold
+            drawnow limitrate nocallbacks;
+            frame = getframe(figT);
+            writeVideo(vT, frame);
+        end
+    end
+    close(vT);
+end
+
+% ========= 规划轨迹视频：播放最终 theta （只更新机器人）=========
+if enableVideoPlanned
+    [figP, axP, ~, hObsP, hGoalP] = localSetupScene([120 120 1280 720], voxel_world, exist('goalWorld','var')*goalWorld);
+    vP = localOpenWriter('KinovaGen3_Planned', 2);
+
+    for t = 1:size(theta,2)
+        if isgraphics(hObsP),  uistack(hObsP,'top');  end
+        if isgraphics(hGoalP), uistack(hGoalP,'top'); end
+
+        show(robot, theta(:,t), 'Parent', axP, 'PreservePlot', false, 'Frames', 'off');
+        hold(axP,'on');
+        drawnow limitrate nocallbacks;
+        frame = getframe(figP);
+        writeVideo(vP, frame);
+        % pause(0.25);   % 纯为人眼预览，与写文件无关
+    end
+    close(vP);
+end
+
+% ========= 只预览（不保存）=========
 if displayAnimation
-    for t=1:size(theta,2)
-        show(robot, theta(:,t),'PreservePlot', false, 'Frames', 'on');
+    [figD, axD, ~, hObsD, hGoalD] = localSetupScene([140 140 1280 720], voxel_world, exist('goalWorld','var')*goalWorld);
+    for t = 1:size(theta,2)
+        if isgraphics(hObsD),  uistack(hObsD,'top');  end
+        if isgraphics(hGoalD), uistack(hGoalD,'top'); end
+
+        show(robot, theta(:,t), 'Parent', axD, 'PreservePlot', false, 'Frames', 'off');
+        hold(axD,'on');
         drawnow;
-        pause(5/20);
-        %     pause;
+        % pause(0.25);
     end
 end
-
-
-
-%% save data
-filename = ['Theta_nDisc', num2str(nDiscretize),'_nPaths_', num2str(nPaths), '.mat'];
-save(filename,'theta')
-
+%% ================== End Video Recording ==================
