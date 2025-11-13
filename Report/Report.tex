@@ -121,11 +121,22 @@ w^{(k)} = \frac{\exp(-\eta^{-1} C^{(k)})}{\sum_{j=1}^K \exp(-\eta^{-1} C^{(j)})}
 我们的代价函数由三部分组成：
 
 \subsubsection{障碍代价 $c_{\text{obs}}$}
-采用基于\textbf{符号欧氏距离场}（Signed Euclidean Distance Transform, sEDT）的指数惩罚\cite{Khatib1986Potential}。对机器人每一连杆用一系列球体近似（球心由 \verb|stompRobotSphere.m| 生成），计算每个球心到最近障碍的距离 $d_i$：
+采用基于\textbf{符号欧氏距离场}（Signed Euclidean Distance Transform, sEDT）的障碍代价函数\cite{Khatib1986Potential}。对机器人每一连杆用一系列球体近似（球心由 \verb|stompRobotSphere.m| 生成），计算每个球心到最近障碍的距离 $d_i$。
+
+实现中提供了两种代价函数形式：
+
+\paragraph{指数型代价函数}
 \[
-c_{\text{obs}} = \sum_{i} \max\left(0, \exp\left(\alpha(\delta_i)^2\right) - 1\right), \quad \delta_i = d_{\text{safe}} - d_i
+c_{\text{obs}}^{\text{exp}} = \sum_{i} \max\left(0, \exp\left(\alpha(\delta_i)^2\right) - 1\right), \quad \delta_i = d_{\text{safe}} - d_i
 \]
-其中 $d_{\text{safe}}=0.1$m 为安全裕度，$\alpha=200$ 为惩罚强度。仅当 $d_i < d_{\text{safe}}$ 时施加惩罚。
+其中 $d_{\text{safe}}=0.05$m 为安全裕度，$\alpha=100$ 为惩罚强度。仅当 $d_i < d_{\text{safe}}$ 时施加惩罚。
+
+\paragraph{线性型代价函数（带速度权重）}
+当前实现采用线性型代价函数，结合速度权重以考虑运动过程中的碰撞风险：
+\[
+c_{\text{obs}}^{\text{linear}} = w \sum_{i} \phi_i^2 \cdot v_i, \quad \phi_i = \max(0, d_{\text{safe}} - d_i)
+\]
+其中 $v_i$ 为第 $i$ 个碰撞球的速度（通过有限差分计算），$w=10000$ 为权重系数。该形式在安全带内对速度进行二次惩罚，鼓励机器人在接近障碍物时减速，提升安全性。
 
 \subsubsection{平滑代价 $c_{\text{smooth}}$}
 采用二阶有限差分矩阵 $R$ 惩罚加速度：
@@ -183,10 +194,15 @@ end
 \subsubsection{\texttt{stompObstacleCost.m} — 障碍代价}
 关键实现细节：
 \begin{itemize}
-  \item 将球心坐标映射到体素网格索引
+  \item 将球心坐标映射到体素网格索引（使用边界检查避免越界）
   \item 从 sEDT 提取符号距离 $s_i$
   \item 计算有效距离 $d_i = s_i - r_{\text{ball}}$
-  \item 应用指数惩罚公式，仅对 $d_i < d_{\text{safe}}$ 的球施加代价
+  \item 实现两种代价函数形式：
+    \begin{itemize}
+      \item \textbf{指数型}：$c_{\text{exp}} = \sum \max(0, \exp(\alpha \delta_i^2) - 1)$，$\alpha=100$
+      \item \textbf{线性型（当前使用）}：$c_{\text{linear}} = w \sum \phi_i^2 \cdot v_i$，结合速度权重 $v_i$，$w=10000$
+    \end{itemize}
+  \item 使用 try-catch 结构处理边界情况，确保数值稳定性
 \end{itemize}
 
 \subsubsection{\texttt{stompRobotSphere.m} — 碰撞球生成}
@@ -243,7 +259,8 @@ end
 \begin{itemize}
   \item 增大 \verb|nPaths| 可提高收敛稳定性，但需权衡计算时间
   \item 温度参数 \verb|eta=10| 在大多数场景表现良好；过小会使更新过于激进
-  \item 安全裕度 $d_{\text{safe}}=0.1$m 需根据机器人尺寸与障碍密度调整
+  \item 安全裕度 $d_{\text{safe}}=0.05$m 需根据机器人尺寸与障碍密度调整
+  \item 线性型代价函数的权重 $w$ 影响速度惩罚强度，可根据场景动态调整
 \end{itemize}
 
 \subsubsection{潜在改进方向}
@@ -312,6 +329,16 @@ robot = loadrobot('robotName', 'DataFormat', 'column');
   \item \textbf{固定关节识别}：某些机器人（如 UR 系列）起始链接为固定关节，需确保规划的关节角对应实际可动关节
   \item \textbf{关节限位检查}：验证初始和目标配置是否在关节限位范围内
   \item \textbf{逆运动学求解}：使用 \verb|inverseKinematics| 求解器获取初始和目标关节配置，确保末端姿态可达
+\end{itemize}
+
+\subsubsection{可视化与视频录制增强}
+为更好地展示规划过程和结果，实现了增强的可视化功能：
+\begin{itemize}
+  \item \textbf{稳定场景设置}：使用固定视角和坐标轴锁定，确保视频录制过程中视角稳定
+  \item \textbf{障碍物可视化}：使用 \verb|isosurface| 从 sEDT 数据生成障碍物的等值面可视化
+  \item \textbf{目标点标注}：在场景中标注目标位置，便于观察规划结果
+  \item \textbf{视频录制功能}：支持录制训练过程动画（\verb|enableVideoTraining|）和最终规划轨迹动画（\verb|enableVideoPlanned|）
+  \item \textbf{迭代信息显示}：在视频中叠加显示当前迭代次数，便于跟踪优化过程
 \end{itemize}
 
 \subsection{实验结果}
@@ -727,7 +754,7 @@ for each voxel center p in AABB:
   \label{fig:task4_scenario1}
 \end{figure}
 
-WD\subsubsection{场景2：高低障碍}
+\subsubsection{场景2：高低障碍}
 \begin{itemize}
   \item \textbf{障碍物}：低斜板（旋转角度 $\beta = 25°$，尺寸 $[0.40, 0.20, 0.06]$ m）与高横梁（尺寸 $[0.35, 0.25, 0.06]$ m）
   \item \textbf{挑战}：需要先降低高度通过斜板，再升高避开横梁

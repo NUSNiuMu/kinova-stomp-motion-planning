@@ -8,84 +8,87 @@
 \contentsline {paragraph}{Step 4：梯度估计与更新}{6}{paragraph*.5}%
 \contentsline {subsection}{\numberline {1.3}代价函数设计}{6}{subsection.1.3}%
 \contentsline {subsubsection}{\numberline {1.3.1}障碍代价 $c_{\text {obs}}$}{6}{subsubsection.1.3.1}%
-\contentsline {subsubsection}{\numberline {1.3.2}平滑代价 $c_{\text {smooth}}$}{6}{subsubsection.1.3.2}%
+\contentsline {paragraph}{指数型代价函数}{6}{paragraph*.6}%
+\contentsline {paragraph}{线性型代价函数（带速度权重）}{7}{paragraph*.7}%
+\contentsline {subsubsection}{\numberline {1.3.2}平滑代价 $c_{\text {smooth}}$}{7}{subsubsection.1.3.2}%
 \contentsline {subsubsection}{\numberline {1.3.3}约束代价 $c_{\text {constraint}}$}{7}{subsubsection.1.3.3}%
 \contentsline {subsection}{\numberline {1.4}关键实现模块}{7}{subsection.1.4}%
 \contentsline {subsubsection}{\numberline {1.4.1}\texttt {helperSTOMP.m} — 主循环}{7}{subsubsection.1.4.1}%
-\contentsline {subsubsection}{\numberline {1.4.2}\texttt {stompSamples.m} — 采样生成}{7}{subsubsection.1.4.2}%
+\contentsline {subsubsection}{\numberline {1.4.2}\texttt {stompSamples.m} — 采样生成}{8}{subsubsection.1.4.2}%
 \contentsline {subsubsection}{\numberline {1.4.3}\texttt {stompDTheta.m} — 梯度估计}{8}{subsubsection.1.4.3}%
 \contentsline {subsubsection}{\numberline {1.4.4}\texttt {stompObstacleCost.m} — 障碍代价}{8}{subsubsection.1.4.4}%
 \contentsline {subsubsection}{\numberline {1.4.5}\texttt {stompRobotSphere.m} — 碰撞球生成}{8}{subsubsection.1.4.5}%
-\contentsline {subsection}{\numberline {1.5}实验设置与结果}{8}{subsection.1.5}%
-\contentsline {subsubsection}{\numberline {1.5.1}实验环境}{8}{subsubsection.1.5.1}%
+\contentsline {subsection}{\numberline {1.5}实验设置与结果}{9}{subsection.1.5}%
+\contentsline {subsubsection}{\numberline {1.5.1}实验环境}{9}{subsubsection.1.5.1}%
 \contentsline {subsubsection}{\numberline {1.5.2}性能指标}{9}{subsubsection.1.5.2}%
 \contentsline {subsubsection}{\numberline {1.5.3}典型结果}{9}{subsubsection.1.5.3}%
-\contentsline {subsection}{\numberline {1.6}讨论与改进}{9}{subsection.1.6}%
-\contentsline {subsubsection}{\numberline {1.6.1}算法特性分析}{9}{subsubsection.1.6.1}%
-\contentsline {subsubsection}{\numberline {1.6.2}参数调优经验}{9}{subsubsection.1.6.2}%
+\contentsline {subsection}{\numberline {1.6}讨论与改进}{10}{subsection.1.6}%
+\contentsline {subsubsection}{\numberline {1.6.1}算法特性分析}{10}{subsubsection.1.6.1}%
+\contentsline {subsubsection}{\numberline {1.6.2}参数调优经验}{10}{subsubsection.1.6.2}%
 \contentsline {subsubsection}{\numberline {1.6.3}潜在改进方向}{10}{subsubsection.1.6.3}%
 \contentsline {section}{\numberline {2}任务二：多机器人平台 STOMP 算法验证}{10}{section.2}%
 \contentsline {subsection}{\numberline {2.1}任务要求}{10}{subsection.2.1}%
 \contentsline {subsection}{\numberline {2.2}测试机器人平台选择}{10}{subsection.2.2}%
 \contentsline {subsubsection}{\numberline {2.2.1}机器人列表}{10}{subsubsection.2.2.1}%
-\contentsline {subsubsection}{\numberline {2.2.2}选择依据}{10}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.2}选择依据}{11}{subsubsection.2.2.2}%
 \contentsline {subsection}{\numberline {2.3}实现方法}{11}{subsection.2.3}%
 \contentsline {subsubsection}{\numberline {2.3.1}机器人模型加载}{11}{subsubsection.2.3.1}%
 \contentsline {subsubsection}{\numberline {2.3.2}参数自适应调整}{11}{subsubsection.2.3.2}%
-\contentsline {paragraph}{工作空间适配}{11}{paragraph*.6}%
-\contentsline {paragraph}{STOMP 参数调整}{11}{paragraph*.7}%
-\contentsline {subsubsection}{\numberline {2.3.3}关节配置处理}{11}{subsubsection.2.3.3}%
+\contentsline {paragraph}{工作空间适配}{11}{paragraph*.8}%
+\contentsline {paragraph}{STOMP 参数调整}{12}{paragraph*.9}%
+\contentsline {subsubsection}{\numberline {2.3.3}关节配置处理}{12}{subsubsection.2.3.3}%
+\contentsline {subsubsection}{\numberline {2.3.4}可视化与视频录制增强}{12}{subsubsection.2.3.4}%
 \contentsline {subsection}{\numberline {2.4}实验结果}{12}{subsection.2.4}%
 \contentsline {subsubsection}{\numberline {2.4.1}规划成功率}{12}{subsubsection.2.4.1}%
-\contentsline {subsubsection}{\numberline {2.4.2}可视化结果}{12}{subsubsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.5}算法通用性分析}{12}{subsection.2.5}%
-\contentsline {subsubsection}{\numberline {2.5.1}不同自由度的影响}{12}{subsubsection.2.5.1}%
-\contentsline {subsubsection}{\numberline {2.5.2}不同工作空间的影响}{12}{subsubsection.2.5.2}%
-\contentsline {subsubsection}{\numberline {2.5.3}不同几何结构的影响}{12}{subsubsection.2.5.3}%
-\contentsline {subsection}{\numberline {2.6}关键实现要点}{14}{subsection.2.6}%
-\contentsline {subsubsection}{\numberline {2.6.1}统一接口设计}{14}{subsubsection.2.6.1}%
-\contentsline {subsubsection}{\numberline {2.6.2}碰撞检测适配}{14}{subsubsection.2.6.2}%
-\contentsline {subsubsection}{\numberline {2.6.3}性能优化}{14}{subsubsection.2.6.3}%
+\contentsline {subsubsection}{\numberline {2.4.2}可视化结果}{13}{subsubsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.5}算法通用性分析}{13}{subsection.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}不同自由度的影响}{13}{subsubsection.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}不同工作空间的影响}{13}{subsubsection.2.5.2}%
+\contentsline {subsubsection}{\numberline {2.5.3}不同几何结构的影响}{13}{subsubsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.6}关键实现要点}{13}{subsection.2.6}%
+\contentsline {subsubsection}{\numberline {2.6.1}统一接口设计}{13}{subsubsection.2.6.1}%
+\contentsline {subsubsection}{\numberline {2.6.2}碰撞检测适配}{15}{subsubsection.2.6.2}%
+\contentsline {subsubsection}{\numberline {2.6.3}性能优化}{15}{subsubsection.2.6.3}%
 \contentsline {subsection}{\numberline {2.7}总结}{15}{subsection.2.7}%
-\contentsline {section}{\numberline {3}任务三：使用 PoE 公式实现正向运动学}{15}{section.3}%
-\contentsline {subsection}{\numberline {3.1}任务要求}{15}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}PoE 正向运动学基本原理}{15}{subsection.3.2}%
-\contentsline {subsubsection}{\numberline {3.2.1}什么是 PoE 公式？}{15}{subsubsection.3.2.1}%
+\contentsline {section}{\numberline {3}任务三：使用 PoE 公式实现正向运动学}{16}{section.3}%
+\contentsline {subsection}{\numberline {3.1}任务要求}{16}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}PoE 正向运动学基本原理}{16}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}什么是 PoE 公式？}{16}{subsubsection.3.2.1}%
 \contentsline {subsubsection}{\numberline {3.2.2}为什么要用 PoE？}{16}{subsubsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.3}螺旋轴的确定方法}{16}{subsection.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.1}使用几何雅可比矩阵提取}{16}{subsubsection.3.3.1}%
-\contentsline {subsubsection}{\numberline {3.3.2}为什么在 home configuration 计算？}{16}{subsubsection.3.3.2}%
-\contentsline {subsubsection}{\numberline {3.3.3}零位变换矩阵 $M_i$ 的获取}{16}{subsubsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3}螺旋轴的确定方法}{17}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}使用几何雅可比矩阵提取}{17}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}为什么在 home configuration 计算？}{17}{subsubsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}零位变换矩阵 $M_i$ 的获取}{17}{subsubsection.3.3.3}%
 \contentsline {subsection}{\numberline {3.4}核心实现：\texttt {updateJointsWorldPosition.m}}{17}{subsection.3.4}%
 \contentsline {subsubsection}{\numberline {3.4.1}实现策略}{17}{subsubsection.3.4.1}%
-\contentsline {paragraph}{使用缓存避免重复计算}{17}{paragraph*.10}%
-\contentsline {paragraph}{链式指数映射计算}{17}{paragraph*.11}%
-\contentsline {subsubsection}{\numberline {3.4.2}指数映射的实现（Rodrigues 公式）}{17}{subsubsection.3.4.2}%
-\contentsline {paragraph}{旋转关节情况}{17}{paragraph*.12}%
-\contentsline {paragraph}{移动关节情况}{18}{paragraph*.13}%
-\contentsline {subsection}{\numberline {3.5}与 STOMP 的集成}{18}{subsection.3.5}%
-\contentsline {subsubsection}{\numberline {3.5.1}在轨迹优化中的作用}{18}{subsubsection.3.5.1}%
-\contentsline {subsubsection}{\numberline {3.5.2}PoE 的性能优势}{18}{subsubsection.3.5.2}%
-\contentsline {subsection}{\numberline {3.6}验证与调试}{18}{subsection.3.6}%
-\contentsline {subsubsection}{\numberline {3.6.1}正确性验证}{18}{subsubsection.3.6.1}%
+\contentsline {paragraph}{使用缓存避免重复计算}{17}{paragraph*.12}%
+\contentsline {paragraph}{链式指数映射计算}{18}{paragraph*.13}%
+\contentsline {subsubsection}{\numberline {3.4.2}指数映射的实现（Rodrigues 公式）}{18}{subsubsection.3.4.2}%
+\contentsline {paragraph}{旋转关节情况}{18}{paragraph*.14}%
+\contentsline {paragraph}{移动关节情况}{18}{paragraph*.15}%
+\contentsline {subsection}{\numberline {3.5}与 STOMP 的集成}{19}{subsection.3.5}%
+\contentsline {subsubsection}{\numberline {3.5.1}在轨迹优化中的作用}{19}{subsubsection.3.5.1}%
+\contentsline {subsubsection}{\numberline {3.5.2}PoE 的性能优势}{19}{subsubsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.6}验证与调试}{19}{subsection.3.6}%
+\contentsline {subsubsection}{\numberline {3.6.1}正确性验证}{19}{subsubsection.3.6.1}%
 \contentsline {subsubsection}{\numberline {3.6.2}常见问题与解决}{19}{subsubsection.3.6.2}%
-\contentsline {subsection}{\numberline {3.7}实验结果}{19}{subsection.3.7}%
-\contentsline {subsubsection}{\numberline {3.7.1}功能验证}{19}{subsubsection.3.7.1}%
-\contentsline {subsubsection}{\numberline {3.7.2}性能对比}{19}{subsubsection.3.7.2}%
-\contentsline {subsection}{\numberline {3.8}总结}{19}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.7}实验结果}{20}{subsection.3.7}%
+\contentsline {subsubsection}{\numberline {3.7.1}功能验证}{20}{subsubsection.3.7.1}%
+\contentsline {subsubsection}{\numberline {3.7.2}性能对比}{20}{subsubsection.3.7.2}%
+\contentsline {subsection}{\numberline {3.8}总结}{20}{subsection.3.8}%
 \contentsline {section}{\numberline {4}任务四：自定义避障场景设计}{20}{section.4}%
 \contentsline {subsection}{\numberline {4.1}任务要求}{20}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}场景设计策略}{20}{subsection.4.2}%
-\contentsline {subsubsection}{\numberline {4.2.1}设计原则}{20}{subsubsection.4.2.1}%
-\contentsline {subsubsection}{\numberline {4.2.2}障碍物参数化}{20}{subsubsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2}场景设计策略}{21}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}设计原则}{21}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}障碍物参数化}{21}{subsubsection.4.2.2}%
 \contentsline {subsection}{\numberline {4.3}定向盒子体素化实现}{21}{subsection.4.3}%
 \contentsline {subsubsection}{\numberline {4.3.1}核心挑战}{21}{subsubsection.4.3.1}%
 \contentsline {subsubsection}{\numberline {4.3.2}实现方法}{21}{subsubsection.4.3.2}%
-\contentsline {subsubsection}{\numberline {4.3.3}性能优化}{21}{subsubsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.3}性能优化}{22}{subsubsection.4.3.3}%
 \contentsline {subsection}{\numberline {4.4}场景详细描述}{22}{subsection.4.4}%
 \contentsline {subsubsection}{\numberline {4.4.1}场景1：斜墙阻断}{22}{subsubsection.4.4.1}%
 \contentsline {subsubsection}{\numberline {4.4.2}场景2：高低障碍}{22}{subsubsection.4.4.2}%
-\contentsline {subsubsection}{\numberline {4.4.3}场景3：组合场景}{22}{subsubsection.4.4.3}%
+\contentsline {subsubsection}{\numberline {4.4.3}场景3：组合场景}{23}{subsubsection.4.4.3}%
 \contentsline {subsubsection}{\numberline {4.4.4}场景4：弧形拱桥}{24}{subsubsection.4.4.4}%
 \contentsline {subsection}{\numberline {4.5}参数调优}{24}{subsection.4.5}%
 \contentsline {subsubsection}{\numberline {4.5.1}STOMP参数增强}{24}{subsubsection.4.5.1}%
@@ -93,39 +96,39 @@
 \contentsline {subsection}{\numberline {4.6}目标位置自由空间校验}{25}{subsection.4.6}%
 \contentsline {subsubsection}{\numberline {4.6.1}问题背景}{25}{subsubsection.4.6.1}%
 \contentsline {subsubsection}{\numberline {4.6.2}自动修正策略}{25}{subsubsection.4.6.2}%
-\contentsline {subsection}{\numberline {4.7}实验结果}{25}{subsection.4.7}%
-\contentsline {subsubsection}{\numberline {4.7.1}功能验证}{25}{subsubsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7}实验结果}{26}{subsection.4.7}%
+\contentsline {subsubsection}{\numberline {4.7.1}功能验证}{26}{subsubsection.4.7.1}%
 \contentsline {subsubsection}{\numberline {4.7.2}性能指标}{26}{subsubsection.4.7.2}%
 \contentsline {subsubsection}{\numberline {4.7.3}可视化增强}{26}{subsubsection.4.7.3}%
 \contentsline {subsection}{\numberline {4.8}总结}{26}{subsection.4.8}%
-\contentsline {section}{\numberline {5}任务五：末端执行器姿态约束}{26}{section.5}%
-\contentsline {subsection}{\numberline {5.1}任务要求}{26}{subsection.5.1}%
+\contentsline {section}{\numberline {5}任务五：末端执行器姿态约束}{27}{section.5}%
+\contentsline {subsection}{\numberline {5.1}任务要求}{27}{subsection.5.1}%
 \contentsline {subsection}{\numberline {5.2}姿态约束实现策略}{27}{subsection.5.2}%
 \contentsline {subsubsection}{\numberline {5.2.1}软约束 vs 硬约束}{27}{subsubsection.5.2.1}%
 \contentsline {subsubsection}{\numberline {5.2.2}姿态惩罚度量}{27}{subsubsection.5.2.2}%
-\contentsline {paragraph}{方法1：角度惩罚（Angle-based）}{27}{paragraph*.18}%
-\contentsline {paragraph}{方法2：向量残差L1（Vector Residual L1）}{27}{paragraph*.19}%
-\contentsline {paragraph}{方法3：角度铰链惩罚（Angle Hinge）}{27}{paragraph*.20}%
+\contentsline {paragraph}{方法1：角度惩罚（Angle-based）}{28}{paragraph*.20}%
+\contentsline {paragraph}{方法2：向量残差L1（Vector Residual L1）}{28}{paragraph*.21}%
+\contentsline {paragraph}{方法3：角度铰链惩罚（Angle Hinge）}{28}{paragraph*.22}%
 \contentsline {subsection}{\numberline {5.3}核心实现：\texttt {stompTrajCost.m}}{28}{subsection.5.3}%
 \contentsline {subsubsection}{\numberline {5.3.1}姿态约束代价计算}{28}{subsubsection.5.3.1}%
-\contentsline {subsubsection}{\numberline {5.3.2}总代价函数}{28}{subsubsection.5.3.2}%
+\contentsline {subsubsection}{\numberline {5.3.2}总代价函数}{29}{subsubsection.5.3.2}%
 \contentsline {subsection}{\numberline {5.4}起点与终点姿态对齐}{29}{subsection.5.4}%
 \contentsline {subsubsection}{\numberline {5.4.1}起点姿态设置}{29}{subsubsection.5.4.1}%
 \contentsline {subsubsection}{\numberline {5.4.2}终点姿态锁定}{29}{subsubsection.5.4.2}%
-\contentsline {subsubsection}{\numberline {5.4.3}可选策略}{29}{subsubsection.5.4.3}%
-\contentsline {subsection}{\numberline {5.5}对比实验设计}{29}{subsection.5.5}%
-\contentsline {subsubsection}{\numberline {5.5.1}实验流程}{29}{subsubsection.5.5.1}%
+\contentsline {subsubsection}{\numberline {5.4.3}可选策略}{30}{subsubsection.5.4.3}%
+\contentsline {subsection}{\numberline {5.5}对比实验设计}{30}{subsection.5.5}%
+\contentsline {subsubsection}{\numberline {5.5.1}实验流程}{30}{subsubsection.5.5.1}%
 \contentsline {subsubsection}{\numberline {5.5.2}可视化增强}{30}{subsubsection.5.5.2}%
-\contentsline {subsection}{\numberline {5.6}实验结果}{31}{subsection.5.6}%
-\contentsline {subsubsection}{\numberline {5.6.1}功能验证}{31}{subsubsection.5.6.1}%
-\contentsline {subsubsection}{\numberline {5.6.2}定量分析}{31}{subsubsection.5.6.2}%
-\contentsline {subsubsection}{\numberline {5.6.3}路径差异分析}{31}{subsubsection.5.6.3}%
-\contentsline {subsection}{\numberline {5.7}参数调优经验}{31}{subsection.5.7}%
-\contentsline {subsubsection}{\numberline {5.7.1}惩罚权重选择}{31}{subsubsection.5.7.1}%
+\contentsline {subsection}{\numberline {5.6}实验结果}{30}{subsection.5.6}%
+\contentsline {subsubsection}{\numberline {5.6.1}功能验证}{30}{subsubsection.5.6.1}%
+\contentsline {subsubsection}{\numberline {5.6.2}定量分析}{32}{subsubsection.5.6.2}%
+\contentsline {subsubsection}{\numberline {5.6.3}路径差异分析}{32}{subsubsection.5.6.3}%
+\contentsline {subsection}{\numberline {5.7}参数调优经验}{32}{subsection.5.7}%
+\contentsline {subsubsection}{\numberline {5.7.1}惩罚权重选择}{32}{subsubsection.5.7.1}%
 \contentsline {subsubsection}{\numberline {5.7.2}角度阈值设置}{32}{subsubsection.5.7.2}%
-\contentsline {subsubsection}{\numberline {5.7.3}推荐配置}{32}{subsubsection.5.7.3}%
-\contentsline {subsection}{\numberline {5.8}总结}{32}{subsection.5.8}%
-\contentsline {section}{\numberline {6}结论与展望}{32}{section.6}%
+\contentsline {subsubsection}{\numberline {5.7.3}推荐配置}{33}{subsubsection.5.7.3}%
+\contentsline {subsection}{\numberline {5.8}总结}{33}{subsection.5.8}%
+\contentsline {section}{\numberline {6}结论与展望}{33}{section.6}%
 \contentsline {subsection}{\numberline {6.1}主要成果}{33}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}技术亮点}{33}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}未来改进方向}{33}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.2}技术亮点}{34}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}未来改进方向}{34}{subsection.6.3}%
