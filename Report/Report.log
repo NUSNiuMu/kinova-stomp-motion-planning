@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  11 NOV 2025 22:45
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.3) (preloaded format=xelatex 2025.4.25)  13 NOV 2025 14:25
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -835,14 +835,6 @@ m/n/12 'kukaIiwa7'[]\TU/SimSun(0)/m/n/12 、|
 
 
 [11]
-
-LaTeX Warning: Reference `fig:task2_robots_1' on page 12 undefined on input lin
-e 328.
-
-
-LaTeX Warning: Reference `fig:task2_robots_2' on page 12 undefined on input lin
-e 328.
-
 File: Figures/Task2/abbIrb120.png Graphic file (type bmp)
 <Figures/Task2/abbIrb120.png>
 File: Figures/Task2/frankaEmikaPanda.png Graphic file (type bmp)
@@ -868,10 +860,22 @@ File: Figures/Task2/universalUR5.png Graphic file (type bmp)
 [14]
 
 [15]
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 499.
 
-Overfull \hbox (53.49437pt too wide) in paragraph at lines 502--503
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 499.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `subscript' on input line 499.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 499.
+
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 507.
+
+Overfull \hbox (53.49437pt too wide) in paragraph at lines 510--511
 []\TU/SimSun(0)/m/n/12 我 们 在 [][]\TU/lmtt/m/n/12 updateJointsWorldPosition.m []
 \TU/SimSun(0)/m/n/12 中 实 现 \TU/lmr/m/n/12 PoE \TU/SimSun(0)/m/n/12 正 向 运 动 学，| 
  替 换 原 有 的 [][]\TU/lmtt/m/n/12 getTransform()
@@ -914,21 +918,14 @@ Overfull \hbox (53.49437pt too wide) in paragraph at lines 502--503
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: 89CBE7C30F110610A1C651B7709CA509;14308.
+(rerunfilecheck)             Checksum: 3BC18DA60C94D5542FBF801F41895AEE;14475.
  ) 
 Here is how much of TeX's memory you used:
- 20210 strings out of 405075
- 425097 string characters out of 5504329
- 1156747 words of memory out of 5000000
- 46561 multiletter control sequences out of 15000+600000
+ 20211 strings out of 405075
+ 425104 string characters out of 5504329
+ 1160747 words of memory out of 5000000
+ 46562 multiletter control sequences out of 15000+600000
  636631 words of font info for 122 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  93i,9n,111p,749b,1777s stack positions out of 10000i,1000n,20000p,200000b,200000s

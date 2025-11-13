@@ -496,6 +496,14 @@ S_i = Jspace(:, i);  % 6x1 向量: [wx; wy; wz; vx; vy; vz]
 \subsubsection{为什么在 home configuration 计算？}
 螺旋轴描述的是\textbf{关节在初始姿态下的瞬时运动}。根据 PoE 理论，只需在零位计算一次，后续所有姿态的运动学都可通过指数映射推导，无需重新计算螺旋轴。
 
+\subsubsection{零位变换矩阵 $M_i$ 的获取}
+PoE 公式中的 $M_i$ 表示第 $i$ 个关节在\textbf{零位配置}时的齐次变换矩阵。在实现中，我们使用 \verb|getTransform()| 在 home configuration 获取 $M_i$：
+\begin{lstlisting}
+M_i = getTransform(robot_struct, homeConfig, bodyName);
+\end{lstlisting}
+
+\textbf{说明}：虽然 Task 3 要求替换 \verb|getTransform()|，但 $M_i$ 的计算属于\textbf{初始化阶段}的一次性操作，而非轨迹规划主循环中的重复调用。$M_i$ 是机器人的固有几何属性，只需计算一次并缓存。在 STOMP 算法的每次迭代中（约 2800 次正向运动学调用），我们完全使用 PoE 公式计算，不再调用 \verb|getTransform()|。这种设计既满足了任务要求（在主循环中替换 \verb|getTransform()|），又符合工程实践（利用 MATLAB 内置函数获取机器人几何参数）。
+
 \subsection{核心实现：\texttt{updateJointsWorldPosition.m}}
 
 \subsubsection{实现策略}
